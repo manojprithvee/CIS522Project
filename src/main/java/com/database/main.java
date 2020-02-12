@@ -1,4 +1,6 @@
 package com.database;
+import com.database.sql.SQLCreateTable;
+import com.database.sql.SQLSelect;
 import net.sf.jsqlparser.parser.ParseException;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
@@ -21,19 +23,19 @@ public class main {
         while(!(s = sc.nextLine()).isEmpty()) {
             Reader input = new StringReader(s);
             CCJSqlParser parser = new CCJSqlParser(input);
+            String result;
             try {
                 Statement stmt = parser.Statement();
                 if (stmt instanceof Select) {
-                    Select ss = (Select) stmt;
-                    PlainSelect plainSelect = (PlainSelect) ss.getSelectBody();
+                    result = new SQLSelect((Select) stmt).getResult();
                 }
                 else if (stmt instanceof CreateTable){
-                    CreateTable ct =  (CreateTable) stmt;
-                    System.out.println(ct.getColumnDefinitions().toString());
+                    result = new SQLCreateTable((CreateTable) stmt).getResult();
                 }
                 else {
                     throw new ParseException("Only SELECT statement is valid"); //$NON-NLS-1$
                 }
+                System.out.println(result);
             }
             catch (Exception e) {
                 System.out.println("SQL syntax error"); //$NON-NLS-1$
