@@ -25,6 +25,7 @@ package net.sf.jsqlparser.expression.operators.relational;
 import net.sf.jsqlparser.statement.select.SubSelect;
 
 public interface ItemsListVisitor {
-	public void visit(SubSelect subSelect);
-	public void visit(ExpressionList expressionList);
+	void visit(SubSelect subSelect);
+
+	void visit(ExpressionList expressionList);
 }

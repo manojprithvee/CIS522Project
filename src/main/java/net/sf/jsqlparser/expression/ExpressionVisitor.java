@@ -22,71 +22,91 @@
  
  package net.sf.jsqlparser.expression;
 
-import net.sf.jsqlparser.expression.operators.arithmetic.Addition;
-import net.sf.jsqlparser.expression.operators.arithmetic.BitwiseAnd;
-import net.sf.jsqlparser.expression.operators.arithmetic.BitwiseOr;
-import net.sf.jsqlparser.expression.operators.arithmetic.BitwiseXor;
-import net.sf.jsqlparser.expression.operators.arithmetic.Concat;
-import net.sf.jsqlparser.expression.operators.arithmetic.Division;
-import net.sf.jsqlparser.expression.operators.arithmetic.Multiplication;
-import net.sf.jsqlparser.expression.operators.arithmetic.Subtraction;
+import net.sf.jsqlparser.expression.operators.arithmetic.*;
 import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
 import net.sf.jsqlparser.expression.operators.conditional.OrExpression;
-import net.sf.jsqlparser.expression.operators.relational.Between;
-import net.sf.jsqlparser.expression.operators.relational.EqualsTo;
-import net.sf.jsqlparser.expression.operators.relational.ExistsExpression;
-import net.sf.jsqlparser.expression.operators.relational.GreaterThan;
-import net.sf.jsqlparser.expression.operators.relational.GreaterThanEquals;
-import net.sf.jsqlparser.expression.operators.relational.InExpression;
-import net.sf.jsqlparser.expression.operators.relational.IsNullExpression;
-import net.sf.jsqlparser.expression.operators.relational.LikeExpression;
-import net.sf.jsqlparser.expression.operators.relational.Matches;
-import net.sf.jsqlparser.expression.operators.relational.MinorThan;
-import net.sf.jsqlparser.expression.operators.relational.MinorThanEquals;
-import net.sf.jsqlparser.expression.operators.relational.NotEqualsTo;
+import net.sf.jsqlparser.expression.operators.relational.*;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.select.SubSelect;
 
 public interface ExpressionVisitor {
-	public void visit(NullValue nullValue);
-	public void visit(Function function);
-	public void visit(InverseExpression inverseExpression);
-	public void visit(JdbcParameter jdbcParameter);
-	public void visit(DoubleValue doubleValue);
-	public void visit(LongValue longValue);
-	public void visit(DateValue dateValue);
-	public void visit(TimeValue timeValue);
-	public void visit(TimestampValue timestampValue);
-	public void visit(BooleanValue booleanValue);
-	public void visit(StringValue stringValue);
-	public void visit(Addition addition);
-	public void visit(Division division);
-	public void visit(Multiplication multiplication);
-	public void visit(Subtraction subtraction);
-	public void visit(AndExpression andExpression);
-	public void visit(OrExpression orExpression);
-	public void visit(Between between);
-	public void visit(EqualsTo equalsTo);
-	public void visit(GreaterThan greaterThan);
-	public void visit(GreaterThanEquals greaterThanEquals);
-	public void visit(InExpression inExpression);
-	public void visit(IsNullExpression isNullExpression);
-	public void visit(LikeExpression likeExpression);
-	public void visit(MinorThan minorThan);
-	public void visit(MinorThanEquals minorThanEquals);
-	public void visit(NotEqualsTo notEqualsTo);
-	public void visit(Column tableColumn);
-	public void visit(SubSelect subSelect);
-	public void visit(CaseExpression caseExpression);
-	public void visit(WhenClause whenClause);
-	public void visit(ExistsExpression existsExpression);
-	public void visit(AllComparisonExpression allComparisonExpression);
-	public void visit(AnyComparisonExpression anyComparisonExpression);
-	public void visit(Concat concat);
-	public void visit(Matches matches);
-	public void visit(BitwiseAnd bitwiseAnd);
-	public void visit(BitwiseOr bitwiseOr);
-	public void visit(BitwiseXor bitwiseXor);
+	void visit(NullValue nullValue);
+
+	void visit(Function function);
+
+	void visit(InverseExpression inverseExpression);
+
+	void visit(JdbcParameter jdbcParameter);
+
+	void visit(DoubleValue doubleValue);
+
+	void visit(LongValue longValue);
+
+	void visit(DateValue dateValue);
+
+	void visit(TimeValue timeValue);
+
+	void visit(TimestampValue timestampValue);
+
+	void visit(BooleanValue booleanValue);
+
+	void visit(StringValue stringValue);
+
+	void visit(Addition addition);
+
+	void visit(Division division);
+
+	void visit(Multiplication multiplication);
+
+	void visit(Subtraction subtraction);
+
+	void visit(AndExpression andExpression);
+
+	void visit(OrExpression orExpression);
+
+	void visit(Between between);
+
+	void visit(EqualsTo equalsTo);
+
+	void visit(GreaterThan greaterThan);
+
+	void visit(GreaterThanEquals greaterThanEquals);
+
+	void visit(InExpression inExpression);
+
+	void visit(IsNullExpression isNullExpression);
+
+	void visit(LikeExpression likeExpression);
+
+	void visit(MinorThan minorThan);
+
+	void visit(MinorThanEquals minorThanEquals);
+
+	void visit(NotEqualsTo notEqualsTo);
+
+	void visit(Column tableColumn);
+
+	void visit(SubSelect subSelect);
+
+	void visit(CaseExpression caseExpression);
+
+	void visit(WhenClause whenClause);
+
+	void visit(ExistsExpression existsExpression);
+
+	void visit(AllComparisonExpression allComparisonExpression);
+
+	void visit(AnyComparisonExpression anyComparisonExpression);
+
+	void visit(Concat concat);
+
+	void visit(Matches matches);
+
+	void visit(BitwiseAnd bitwiseAnd);
+
+	void visit(BitwiseOr bitwiseOr);
+
+	void visit(BitwiseXor bitwiseXor);
 
 
 }

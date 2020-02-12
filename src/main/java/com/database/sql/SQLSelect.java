@@ -7,11 +7,13 @@ import java.util.Arrays;
 
 public class SQLSelect {
     private Select sql;
+
     public SQLSelect(Select stmt) {
         this.sql = stmt;
     }
-    public String getResult(){
+
+    public String getResult() {
         PlainSelect select = (PlainSelect) sql.getSelectBody();
-        return(Arrays.toString(new String[]{select.getFromItem().toString(), select.getSelectItems().toString()}));
+        return (Arrays.toString(new String[]{select.getFromItem().toString(), select.getSelectItems().toString()}));
     }
 }

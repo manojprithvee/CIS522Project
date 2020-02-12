@@ -30,17 +30,20 @@ package net.sf.jsqlparser.parser;
  * contain only ASCII characters (without unicode processing).
  */
 
-public class SimpleCharStream
-{
-/** Whether parser is static. */
+public class SimpleCharStream {
+  /**
+   * Whether parser is static.
+   */
   public static final boolean staticFlag = false;
   int bufsize;
   int available;
   int tokenBegin;
-/** Position in buffer. */
+  /**
+   * Position in buffer.
+   */
   public int bufpos = -1;
-  protected int bufline[];
-  protected int bufcolumn[];
+  protected int[] bufline;
+  protected int[] bufcolumn;
 
   protected int column = 0;
   protected int line = 1;
@@ -59,16 +62,13 @@ public class SimpleCharStream
   protected int getTabSize(int i) { return tabSize; }
 
 
-  protected void ExpandBuff(boolean wrapAround)
-  {
+  protected void ExpandBuff(boolean wrapAround) {
     char[] newbuffer = new char[bufsize + 2048];
-    int newbufline[] = new int[bufsize + 2048];
-    int newbufcolumn[] = new int[bufsize + 2048];
+    int[] newbufline = new int[bufsize + 2048];
+    int[] newbufcolumn = new int[bufsize + 2048];
 
-    try
-    {
-      if (wrapAround)
-      {
+    try {
+      if (wrapAround) {
         System.arraycopy(buffer, tokenBegin, newbuffer, 0, bufsize - tokenBegin);
         System.arraycopy(buffer, 0, newbuffer, bufsize - tokenBegin, bufpos);
         buffer = newbuffer;

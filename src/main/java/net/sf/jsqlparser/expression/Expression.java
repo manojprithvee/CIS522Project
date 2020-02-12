@@ -24,5 +24,5 @@
 
 
 public interface Expression {
-	public void accept(ExpressionVisitor expressionVisitor);
+    void accept(ExpressionVisitor expressionVisitor);
 }

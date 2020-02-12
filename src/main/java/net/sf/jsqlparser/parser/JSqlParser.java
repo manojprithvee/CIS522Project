@@ -22,14 +22,14 @@
 
 package net.sf.jsqlparser.parser;
 
-import java.io.Reader;
-
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.statement.Statement;
+
+import java.io.Reader;
 
 /**
  * Every parser must implements this interface
  */
 public interface JSqlParser {
-	public Statement parse(Reader statementReader) throws JSQLParserException;
+	Statement parse(Reader statementReader) throws JSQLParserException;
 }

@@ -25,5 +25,5 @@ package net.sf.jsqlparser.statement.select;
 import net.sf.jsqlparser.schema.Table;
 
 public interface IntoTableVisitor {
-	public void visit(Table tableName);
+	void visit(Table tableName);
 }

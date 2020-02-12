@@ -32,13 +32,20 @@ import net.sf.jsqlparser.statement.truncate.Truncate;
 import net.sf.jsqlparser.statement.update.Update;
 
 public interface StatementVisitor {
-	public void visit(Select select);
-	public void visit(Delete delete);
-	public void visit(Update update);
-	public void visit(Insert insert);
-	public void visit(Replace replace);
-	public void visit(Drop drop);
-	public void visit(Truncate truncate);
-	public void visit(CreateTable createTable);
+	void visit(Select select);
+
+	void visit(Delete delete);
+
+	void visit(Update update);
+
+	void visit(Insert insert);
+
+	void visit(Replace replace);
+
+	void visit(Drop drop);
+
+	void visit(Truncate truncate);
+
+	void visit(CreateTable createTable);
 
 }

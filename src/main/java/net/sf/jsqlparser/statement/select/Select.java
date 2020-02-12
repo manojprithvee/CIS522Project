@@ -19,19 +19,19 @@
  * library; if not, write to the Free Software Foundation, Inc., 59 Temple Place, Suite 330,
  * Boston, MA 02111-1307, USA.
  */
- 
-package net.sf.jsqlparser.statement.select;
 
-import java.util.Iterator;
-import java.util.List;
+package net.sf.jsqlparser.statement.select;
 
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 
+import java.util.Iterator;
+import java.util.List;
+
 public class Select implements Statement {
 	private SelectBody selectBody;
 	private List<WithItem> withItemsList;
-	
+
 	public void accept(StatementVisitor statementVisitor) {
 		statementVisitor.visit(this);
 	}
@@ -49,7 +49,7 @@ public class Select implements Statement {
 		if (withItemsList != null && !withItemsList.isEmpty()) {
 			retval.append("WITH ");
 			for (Iterator<WithItem> iter = withItemsList.iterator(); iter.hasNext();) {
-				WithItem withItem = (WithItem)iter.next();
+				WithItem withItem = iter.next();
 				retval.append(withItem);
 				if (iter.hasNext())
 					retval.append(",");
