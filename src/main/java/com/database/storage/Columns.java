@@ -3,12 +3,10 @@ package com.database.storage;
 public class Columns {
     public String name;
     public String type;
-    public Object data;
 
-    public Columns(String name, String type, String data) throws Exception {
+    public Columns(String name, String type) {
         this.name = name;
-        this.type = type.toLowerCase();
-        this.data = Type.getClassForType(this.type, data);
+        this.type = type.toUpperCase();
     }
 
     public String getName() {

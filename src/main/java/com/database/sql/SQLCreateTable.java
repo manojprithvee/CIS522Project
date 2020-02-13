@@ -7,7 +7,8 @@ public class SQLCreateTable {
     public SQLCreateTable(CreateTable stmt) {
         this.sql = stmt;
     }
-    public String getResult(){
-        return(sql.getColumnDefinitions().toString());
+
+    public String getResult() throws Exception {
+        return (sql.getColumnDefinitions().toString());
     }
 }
