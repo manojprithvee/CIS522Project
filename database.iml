@@ -19,6 +19,15 @@
     <orderEntry type="module-library">
       <library>
         <CLASSES>
+          <root url="jar://$USER_HOME$/Downloads/commons-csv-1.8/commons-csv-1.8.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library>
+        <CLASSES>
           <root url="jar://$USER_HOME$/Downloads/evallib-1.0.jar!/" />
         </CLASSES>
         <JAVADOC />
