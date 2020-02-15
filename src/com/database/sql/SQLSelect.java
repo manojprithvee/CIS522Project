@@ -32,6 +32,8 @@ public class SQLSelect {
         Global.alias = new HashMap<String, Expression>();
         if (((PlainSelect) body).getSelectItems().get(0) instanceof AllColumns)
             return;
+        if (((PlainSelect) body).getSelectItems().get(0) instanceof AllTableColumns)
+            return;
         for (SelectItem a : selectItems) {
             SelectExpressionItem s = (SelectExpressionItem) a;
             String alias = s.getAlias();
@@ -73,20 +75,22 @@ public class SQLSelect {
     }
 
     public static HelperImp getOperator(PlainSelect body) {
-        //todo:work on subselect
         Table t = null;
         HelperImp op = null;
         boolean allCol = false;
         if (body.getFromItem() instanceof SubSelect) {
-            SQLSelect.populateAliases(body);
-            t = (Table) body.getFromItem();
-            checkTableAlias(t);
-            allCol = body.getSelectItems().get(0) instanceof AllColumns;
-            String tableFile = Global.dataDir.toString() + File.separator + t.getName() + ".dat";
+            t = new Table();
+            if (body.getFromItem().getAlias() == null) {
+                t.setName("SubQuery");
+                t.setAlias("SubQuery");
 
-
-            HelperImp readOp = new ScanHelper(new File(tableFile), t);
-            op = Execute.executeSelect(readOp,
+            } else {
+                t.setName(body.getFromItem().getAlias());
+                t.setAlias(body.getFromItem().getAlias());
+            }
+            createSchema(((PlainSelect) ((SubSelect) body.getFromItem()).getSelectBody()).getSelectItems(), t, ((PlainSelect) ((SubSelect) body.getFromItem()).getSelectBody()).getFromItem());
+            op = getOperator((PlainSelect) ((SubSelect) body.getFromItem()).getSelectBody());
+            op = Execute.executeSelect(op,
                     t,
                     body.getWhere(),
                     body.getSelectItems(),
@@ -100,7 +104,7 @@ public class SQLSelect {
             SQLSelect.populateAliases(body);
             t = (Table) body.getFromItem();
             checkTableAlias(t);
-            allCol = body.getSelectItems().get(0) instanceof AllColumns;
+            allCol = ((body.getSelectItems().get(0) instanceof AllColumns) || (body.getSelectItems().get(0) instanceof AllTableColumns));
             String tableFile = Global.dataDir.toString() + File.separator + t.getName() + ".dat";
 
 
@@ -135,10 +139,16 @@ public class SQLSelect {
         }
     }
 
-    public static void createSchema(ArrayList<SelectExpressionItem> selectItems, Table t) {
+    public static void createSchema(List<SelectItem> selectItems, Table t, FromItem fromItem) {
         HashMap<String, Integer> schema = new HashMap<String, Integer>();
-        for (int i = 0; i < selectItems.size(); i++) {
-            schema.put(selectItems.get(i).getExpression().toString(), i);
+        if ((selectItems.get(0) instanceof AllColumns) || (selectItems.get(0) instanceof AllTableColumns)) {
+            Table table = (Table) fromItem;
+            schema = (Global.tables.get(table.getName()));
+        } else {
+            for (int i = 0; i < selectItems.size(); i++) {
+                SelectExpressionItem abc = (SelectExpressionItem) selectItems.get(i);
+                schema.put(abc.getExpression().toString(), i);
+            }
         }
         Global.tables.put(t.getAlias(), schema);
     }
@@ -150,8 +160,8 @@ public class SQLSelect {
             HelperImp oper = getOperator((PlainSelect) body);
             Execute.print(oper);
         } else if (body instanceof Union) {
-            //todo union
             List<PlainSelect> plainSelects = ((Union) body).getPlainSelects();
+
         }
         return "";
     }

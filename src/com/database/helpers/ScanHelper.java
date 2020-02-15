@@ -52,30 +52,24 @@ public class ScanHelper implements HelperImp {
         Object[] tuple = new Object[line.size()];
         ArrayList<String> dataType = Global.tableSchema.get(table.getName().toUpperCase());
         for (int i = 0; i < line.size(); i++) {
-            switch (dataType.get(i)) {
-                case "int":
+            switch (dataType.get(i).toUpperCase()) {
                 case "INT":
                     tuple[i] = new LongValue(line.get(i));
                     break;
-                case "decimal":
                 case "DECIMAL":
                 case "DOUBLE":
                     tuple[i] = new DoubleValue(line.get(i));
                     break;
-                case "date":
                 case "DATE":
                     tuple[i] = new DateValue(" " + line.get(i) + " ");
                     break;
-                case "char":
                 case "CHAR":
-                case "string":
                 case "STRING":
-                case "varchar":
                 case "VARCHAR":
                     tuple[i] = new StringValue(" " + line.get(i) + " ");
                     break;
                 default: {
-                    if (dataType.get(i).contains("CHAR") || dataType.get(i).contains("char")) {
+                    if (dataType.get(i).contains("CHAR")) {
                         tuple[i] = new StringValue(" " + line.get(i) + " ");
                     }
                 }
