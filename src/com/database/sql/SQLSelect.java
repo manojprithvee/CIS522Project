@@ -14,7 +14,6 @@ import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
@@ -43,35 +42,6 @@ public class SQLSelect {
             } else if (alias != null)
                 Global.alias.put(s.getAlias(), s.getExpression());
         }
-    }
-
-    public static ArrayList<Object> getParameters(PlainSelect body) {
-        //list of parameters in the sequence - From Item, Condition Item,  Select Items, Joins, GroupByColumnReference, Having, allColumns,Limit
-        Table t = null;
-        ArrayList<Object> parameters = new ArrayList<Object>();
-        if (body.getFromItem() instanceof Table) {
-            t = (Table) body.getFromItem();
-            if (t.getAlias() != null) {
-                Global.tableAlias.put(t.getAlias(), t);
-            }
-            parameters.add(Global.dataDir.toString() + File.separator + t.getName() + ".dat");
-            parameters.add(t.getName());
-            parameters.add(body.getWhere());
-            parameters.add(new ArrayList<SelectExpressionItem>(Arrays.asList((SelectExpressionItem[]) (body).getSelectItems().toArray())));
-            parameters.add(body.getJoins());
-            parameters.add(body.getGroupByColumnReferences());
-            parameters.add(body.getHaving());
-
-            if (body.getSelectItems().get(0) instanceof AllColumns)
-                parameters.add(true);
-            else
-                parameters.add(false);
-
-            parameters.add(body.getLimit());
-            return parameters;
-        }
-        return parameters;
-
     }
 
     public static HelperImp getOperator(PlainSelect body) {
