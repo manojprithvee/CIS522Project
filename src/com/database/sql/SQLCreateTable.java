@@ -16,7 +16,7 @@ public class SQLCreateTable {
         this.sql = stmt;
     }
 
-    public void getResult() throws Exception {
+    public void getResult() {
         String tableName = sql.getTable().getName().toUpperCase();
         HashMap<String, Integer> cols = new HashMap<String, Integer>();
         ArrayList<String> dataType = new ArrayList<String>();

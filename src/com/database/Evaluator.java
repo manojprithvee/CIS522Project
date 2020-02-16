@@ -4,7 +4,6 @@ import net.sf.jsqlparser.eval.Eval;
 import net.sf.jsqlparser.expression.PrimitiveValue;
 import net.sf.jsqlparser.schema.Column;
 
-import java.sql.SQLException;
 import java.util.HashMap;
 
 
@@ -18,7 +17,7 @@ public class Evaluator extends Eval {
         this.tuple = tuple;
     }
 
-    public PrimitiveValue eval(Column c) throws SQLException {
+    public PrimitiveValue eval(Column c) {
         String t = "";
         int columnID = 0;
         if (c.getTable() != null && c.getTable().getName() != null) {

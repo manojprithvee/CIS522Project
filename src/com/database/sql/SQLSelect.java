@@ -11,8 +11,6 @@ import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.select.*;
 
 import java.io.File;
-import java.io.IOException;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -123,7 +121,7 @@ public class SQLSelect {
         Global.tables.put(t.getAlias(), schema);
     }
 
-    public String getResult() throws SQLException, IOException {
+    public String getResult() {
         SelectBody body = sql.getSelectBody();
 
         if (body instanceof PlainSelect) {
