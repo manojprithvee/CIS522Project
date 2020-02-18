@@ -1,0 +1,3 @@
+create table r(a int, b int, c int)
+create table x(a int, b int, c int)
+select R.* from R,X

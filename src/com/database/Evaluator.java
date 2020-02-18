@@ -24,7 +24,6 @@ public class Evaluator extends Eval {
             t = c.getTable().getName();
             if (schema.containsKey(t + "." + c.getColumnName())) {
                 columnID = schema.get(t + "." + c.getColumnName());
-                return (PrimitiveValue) tuple[columnID];
             } else {
                 for (String key : schema.keySet()) {
                     String x = key.substring(key.indexOf(".") + 1);
@@ -32,8 +31,8 @@ public class Evaluator extends Eval {
                         columnID = schema.get(key);
                     }
                 }
-                return (PrimitiveValue) tuple[columnID];
             }
+            return (PrimitiveValue) tuple[columnID];
         } else {
             if (Global.alias != null && Global.alias.containsKey(c.getColumnName())) {
                 if (schema.containsKey(Global.alias.get(c.getColumnName()).toString()))

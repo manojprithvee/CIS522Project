@@ -61,16 +61,16 @@ public class ScanHelper implements HelperImp {
                     tuple[i] = new DoubleValue(line.get(i));
                     break;
                 case "DATE":
-                    tuple[i] = new DateValue(" " + line.get(i) + " ");
+                    tuple[i] = new DateValue(line.get(i));
                     break;
                 case "CHAR":
                 case "STRING":
                 case "VARCHAR":
-                    tuple[i] = new StringValue(" " + line.get(i) + " ");
+                    tuple[i] = new StringValue(line.get(i));
                     break;
                 default: {
                     if (dataType.get(i).contains("CHAR")) {
-                        tuple[i] = new StringValue(" " + line.get(i) + " ");
+                        tuple[i] = new StringValue(line.get(i));
                     }
                 }
             }

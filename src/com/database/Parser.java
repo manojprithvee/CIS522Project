@@ -23,7 +23,7 @@ public class Parser {
 
         //TODO: convert GET DATA FROM QUERY.TXT
         while (!(s = sc.nextLine()).isEmpty()) {
-            Reader input = new StringReader(s);
+            Reader input = new StringReader(s.toUpperCase());
             CCJSqlParser parser = new CCJSqlParser(input);
 
             try {

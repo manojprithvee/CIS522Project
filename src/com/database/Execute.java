@@ -1,6 +1,7 @@
 package com.database;
 
 import com.database.helpers.HelperImp;
+import com.database.helpers.SelectionHelper;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.StringValue;
 import net.sf.jsqlparser.schema.Column;
@@ -15,6 +16,8 @@ import java.util.List;
 public class Execute {
     public static HelperImp executeSelect(HelperImp op, Table table, Expression condition, List<SelectItem> list, ArrayList<Join> joins, ArrayList<Column> groupByColumnReferences, Expression having, boolean allColumns, Limit limit) {
         //todo should complete it
+        if (condition != null)
+            op = new SelectionHelper(op, Global.tables.get(table.getAlias()), condition);
         return op;
     }
 
