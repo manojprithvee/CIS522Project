@@ -31,22 +31,19 @@ public class SelectionItrator implements ItratorImp {
 
     @Override
     public Object[] next() {
-        Object[] tuple = null;
-        tuple = op.next();
-        if (tuple == null) {
-            return null;
-        }
+        Object[] tuple = op.next();
         Evaluator eval = new Evaluator(schema, tuple);
-        try {
-            if (((BooleanValue) eval.eval(condition)).getValue()) {
-                return tuple;
-            } else {
-                tuple = next();
-                return tuple;
+        while (tuple != null) {
+            try {
+                if (((BooleanValue) eval.eval(condition)).getValue()) {
+                    return tuple;
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+                System.out.println("Exception occured in SelectionOperator.readOneTuple()");
             }
-        } catch (SQLException e) {
-            e.printStackTrace();
-            System.out.println("Exception occured in SelectionOperator.readOneTuple()");
+            tuple = op.next();
+            eval.setTuple(tuple);
         }
         return null;
     }
