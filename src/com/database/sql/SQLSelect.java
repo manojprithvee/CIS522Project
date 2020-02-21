@@ -3,8 +3,8 @@ package com.database.sql;
 
 import com.database.Execute;
 import com.database.Global;
-import com.database.helpers.HelperImp;
-import com.database.helpers.ScanHelper;
+import com.database.helpers.ItratorImp;
+import com.database.helpers.ScanItrator;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
@@ -74,9 +74,9 @@ public class SQLSelect {
 
     }
 
-    public static HelperImp getOperator(PlainSelect body) {
+    public static ItratorImp getOperator(PlainSelect body) {
         Table t = null;
-        HelperImp op = null;
+        ItratorImp op = null;
         boolean allCol = false;
         if (body.getFromItem() instanceof SubSelect) {
             t = new Table();
@@ -128,7 +128,7 @@ public class SQLSelect {
             System.out.println(list);
             System.out.println(body.getSelectItems());
             String tableFile = Global.dataDir.toString() + File.separator + t.getName() + ".dat";
-            HelperImp readOp = new ScanHelper(new File(tableFile), t);
+            ItratorImp readOp = new ScanItrator(new File(tableFile), t);
             op = Execute.executeSelect(readOp,
                     t,
                     body.getWhere(),
@@ -177,7 +177,7 @@ public class SQLSelect {
         SelectBody body = sql.getSelectBody();
 
         if (body instanceof PlainSelect) {
-            HelperImp oper = getOperator((PlainSelect) body);
+            ItratorImp oper = getOperator((PlainSelect) body);
             Execute.print(oper);
         } else if (body instanceof Union) {
             List<PlainSelect> plainSelects = ((Union) body).getPlainSelects();

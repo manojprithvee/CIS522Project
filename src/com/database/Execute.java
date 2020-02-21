@@ -1,7 +1,7 @@
 package com.database;
 
-import com.database.helpers.HelperImp;
-import com.database.helpers.SelectionHelper;
+import com.database.helpers.ItratorImp;
+import com.database.helpers.SelectionItrator;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.StringValue;
 import net.sf.jsqlparser.schema.Column;
@@ -14,15 +14,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Execute {
-    public static HelperImp executeSelect(HelperImp op, Table table, Expression condition, List<SelectItem> list, ArrayList<Join> joins, ArrayList<Column> groupByColumnReferences, Expression having, boolean allColumns, Limit limit) {
+    public static ItratorImp executeSelect(ItratorImp op, Table table, Expression condition, List<SelectItem> list, ArrayList<Join> joins, ArrayList<Column> groupByColumnReferences, Expression having, boolean allColumns, Limit limit) {
         //todo should complete it
         if (condition != null)
-            op = new SelectionHelper(op, Global.tables.get(table.getAlias()), condition);
+            op = new SelectionItrator(op, Global.tables.get(table.getAlias()), condition);
         return op;
     }
 
-    public static void print(HelperImp input) {
-        Object[] row = input.read();
+    public static void print(ItratorImp input) {
+        Object[] row = input.next();
         while (row != null) {
             int i = 0;
             for (i = 0; i < row.length - 1; i++) {
@@ -36,7 +36,7 @@ public class Execute {
             else
                 System.out.print(row[i]);
             System.out.println();
-            row = input.read();
+            row = input.next();
         }
     }
 
