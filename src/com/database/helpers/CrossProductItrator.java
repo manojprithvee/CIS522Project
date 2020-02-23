@@ -6,14 +6,18 @@ import net.sf.jsqlparser.schema.Table;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 
-public class CrossProductHelper implements HelperImp {
+public class CrossProductItrator implements ItratorImp {
 
+    private final int size;
+    private int size2, size1;
     ArrayList<Object[]> allTuples;
     int counter;
     ArrayList<ItratorImp> readOps;
     ArrayList<Table> joinTables;
     Table table;
+    private Object[] temp1, temp2;
 
     public CrossProductItrator(ItratorImp oper, Table joinTables,
                                Table table) {
@@ -21,7 +25,7 @@ public class CrossProductHelper implements HelperImp {
         readOps = new ArrayList<ItratorImp>();
         this.joinTables = new ArrayList<Table>();
         allTuples = new ArrayList<Object[]>();
-        readOps.add((ItratorImp) oper);
+        readOps.add(oper);
         this.joinTables.add(table);
         this.joinTables.add(joinTables);
 
@@ -32,8 +36,21 @@ public class CrossProductHelper implements HelperImp {
         } catch (NullPointerException e) {
             System.out.println("Null pointer exception in JoinOperator()");
         }
+        LinkedHashMap<String, Integer> newSchema = new LinkedHashMap<String, Integer>();
+        LinkedHashMap<String, Integer> tempSchema = new LinkedHashMap<String, Integer>();
+        size1 = Global.tables.get(this.joinTables.get(0).getAlias()).size();
+        size2 = Global.tables.get(this.joinTables.get(1).getAlias()).size();
+        ArrayList<String> dataType = new ArrayList<String>();
+        String newTableName = this.joinTables.get(0).getAlias() + "," + this.joinTables.get(1).getAlias();
+        this.table = new Table(newTableName, newTableName);
+        this.table.setAlias(newTableName);
+        dataType = updateSchema(newSchema, tempSchema, 0, 0, dataType);
+        dataType = updateSchema(newSchema, tempSchema, size1, 1, dataType);
+        Global.tables.put(newTableName, newSchema);
+        Global.tableSchema.put(newTableName, dataType);
+        temp1 = readOps.get(0).next();
 
-        getData();
+        size = size1 + size2;
     }
 
     @Override
@@ -41,15 +58,6 @@ public class CrossProductHelper implements HelperImp {
         counter = 0;
     }
 
-    @Override
-    public Object[] next() {
-        Object[] temp = null;
-        if (counter < allTuples.size()) {
-            temp = allTuples.get(counter);
-            counter++;
-        }
-        return temp;
-    }
 
     ArrayList<String> updateSchema(HashMap<String, Integer> newSchema, HashMap<String, Integer> tempSchema,
                                    int size, int index, ArrayList<String> dataType) {
@@ -62,49 +70,22 @@ public class CrossProductHelper implements HelperImp {
         return dataType;
     }
 
-    void getData() {
-        HashMap<String, Integer> newSchema = new HashMap<String, Integer>();
-        HashMap<String, Integer> tempSchema = new HashMap<String, Integer>();
-        Object[] temp1 = readOps.get(0).next();
-        Object[] temp2 = readOps.get(1).next();
-
-        int size1 = Global.tables.get(joinTables.get(0).getAlias()).size();
-        int size2 = Global.tables.get(joinTables.get(1).getAlias()).size();
-
-        ArrayList<String> dataType = new ArrayList<String>();
-        String newTableName = joinTables.get(0).getAlias() + "," + joinTables.get(1).getAlias();
-        this.table = new Table(newTableName, newTableName);
-        this.table.setAlias(newTableName);
-        dataType=updateSchema(newSchema, tempSchema, 0, 0, dataType);
-        dataType=updateSchema(newSchema, tempSchema, size1, 1, dataType);
-        Global.tables.put(newTableName, newSchema);
-        Global.tableSchema.put(newTableName, dataType);
-
-        int size = size1 + size2;
-        while (temp1 != null) {
-            Object[] toReturn1 = new Object[size1];
-            for (int i = 0; i < size1; i++) {
-                toReturn1[i] = temp1[i];
-            }
-            while (temp2 != null) {
-                Object[] toReturn2 = new Object[size2];
-                for (int j = 0; j < size2; j++) {
-                    toReturn2[j] = temp2[j];
-                }
-                if (readOps.size() == 2) {
-                    Object[] x = createTuple(toReturn1, toReturn2, size);
-                    allTuples.add(x);
-                }
-                temp2 = readOps.get(1).next();
-            }
+    @Override
+    public Object[] next() {
+        temp2 = readOps.get(1).next();
+        if (temp2 == null) {
+            temp1 = readOps.get(0).next();
+            if (temp1 == null)
+                return null;
             readOps.get(1).reset();
             temp2 = readOps.get(1).next();
-            temp1 = readOps.get(0).next();
         }
+        return createTuple(temp1, temp2);
+
     }
 
 
-    public Object[] createTuple(Object[] toReturn1, Object[] toReturn2, int size) {
+    public Object[] createTuple(Object[] toReturn1, Object[] toReturn2) {
         Object[] toReturn = new Object[size];
         int index = 0;
         for (int i = 0; i < toReturn1.length; i++) {

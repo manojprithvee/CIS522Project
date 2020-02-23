@@ -1,12 +1,10 @@
 package com.database;
 
-import com.database.helpers.ItratorImp;
-import com.database.helpers.SelectionItrator;
+import com.database.helpers.*;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.StringValue;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
-import net.sf.jsqlparser.statement.select.Join;
 import net.sf.jsqlparser.statement.select.Limit;
 import net.sf.jsqlparser.statement.select.SelectItem;
 
@@ -14,14 +12,25 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Execute {
-    public static ItratorImp executeSelect(ItratorImp op, Table table, Expression condition, List<SelectItem> list, ArrayList<Join> joins, ArrayList<Column> groupByColumnReferences, Expression having, boolean allColumns, Limit limit) {
-        //todo should complete it
+    public static ItratorImp executeSelect(ItratorImp op, Table table, Expression condition, List<SelectItem> list, ArrayList<Table> joins, ArrayList<Column> groupByColumnReferences, Expression having, boolean allColumns, Limit limit) {
+
+        ItratorImp oper = op;
+        if (joins != null) {
+            for (int i = 0; i < joins.size(); i++) {
+                Table jointly = joins.get(i);
+                oper = new CrossProductItrator(oper, jointly, table);
+                table = oper.getTable();
+            }
+            table = oper.getTable();
+        }
         if (condition != null)
-            op = new SelectionItrator(op, Global.tables.get(table.getAlias()), condition);
-        return op;
+            oper = new SelectionItrator(oper, Global.tables.get(table.getAlias()), condition);
+        oper = new ProjectionItrator(oper, list, table, allColumns);
+        return oper;
     }
 
-    public static void print(ItratorImp input) {
+
+    public static void dump(ItratorImp input) {
         Object[] row = input.next();
         while (row != null) {
             int i = 0;
@@ -40,4 +49,7 @@ public class Execute {
         }
     }
 
+    public static ItratorImp executeUnion(ItratorImp current, ItratorImp operator) {
+        return new UnionItator(current, operator);
+    }
 }

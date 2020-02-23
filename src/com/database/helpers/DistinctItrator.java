@@ -10,11 +10,9 @@ public class DistinctItrator implements ItratorImp {
 
     private final ItratorImp itrator;
     private HashSet<List<Object>> buffer = new HashSet<>();
-
     public DistinctItrator(ItratorImp itrator) {
         this.itrator = itrator;
     }
-
     @Override
     public void reset() {
 

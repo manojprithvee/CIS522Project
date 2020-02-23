@@ -3,6 +3,7 @@ package com.database.sql;
 
 import com.database.Execute;
 import com.database.Global;
+import com.database.helpers.DistinctItrator;
 import com.database.helpers.ItratorImp;
 import com.database.helpers.ScanItrator;
 import net.sf.jsqlparser.expression.Expression;
@@ -13,10 +14,7 @@ import net.sf.jsqlparser.statement.select.*;
 import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 public class SQLSelect {
     private Select sql;
@@ -30,11 +28,9 @@ public class SQLSelect {
 
         ArrayList<SelectItem> selectItems = (ArrayList<SelectItem>) ((PlainSelect) body).getSelectItems();
         Global.alias = new HashMap<String, Expression>();
-        if (((PlainSelect) body).getSelectItems().get(0) instanceof AllColumns)
-            return;
-        if (((PlainSelect) body).getSelectItems().get(0) instanceof AllTableColumns)
-            return;
         for (SelectItem a : selectItems) {
+            if ((a instanceof AllTableColumns) || (a instanceof AllColumns))
+                return;
             SelectExpressionItem s = (SelectExpressionItem) a;
             String alias = s.getAlias();
             if (alias == null) {
@@ -78,23 +74,41 @@ public class SQLSelect {
         Table t = null;
         ItratorImp op = null;
         boolean allCol = false;
+        int i;
+        i = 0;
+        ArrayList<Table> joins = new ArrayList<Table>();
+        ArrayList<String> tablenames = new ArrayList<>();
+        tablenames.add(body.getFromItem().getAlias());
+        if (body.getJoins() != null) {
+            for (Join join : body.getJoins()) {
+                Table tx = (Table) join.getRightItem();
+                if (tablenames.contains(tx.getName())) {
+                    if (tx.getAlias() == null) {
+                        tx.setAlias(String.format("%d", i));
+                    }
+                }
+                checkTableAlias(tx);
+                joins.add(tx);
+                i += 1;
+            }
+        }
         if (body.getFromItem() instanceof SubSelect) {
             t = new Table();
             if (body.getFromItem().getAlias() == null) {
                 t.setName("SubQuery");
                 t.setAlias("SubQuery");
-
             } else {
                 t.setName(body.getFromItem().getAlias());
                 t.setAlias(body.getFromItem().getAlias());
             }
+
             createSchema(((PlainSelect) ((SubSelect) body.getFromItem()).getSelectBody()).getSelectItems(), t, ((PlainSelect) ((SubSelect) body.getFromItem()).getSelectBody()).getFromItem());
             op = getOperator((PlainSelect) ((SubSelect) body.getFromItem()).getSelectBody());
             op = Execute.executeSelect(op,
                     t,
                     body.getWhere(),
                     body.getSelectItems(),
-                    (ArrayList<Join>) body.getJoins(),
+                    joins,
                     (ArrayList<Column>) body.getGroupByColumnReferences(),
                     body.getHaving(),
                     allCol,
@@ -106,34 +120,13 @@ public class SQLSelect {
             checkTableAlias(t);
             allCol = ((body.getSelectItems().get(0) instanceof AllColumns));
             ArrayList<SelectItem> list = new ArrayList<>();
-            for (SelectItem i : body.getSelectItems()) {
-
-                if (i instanceof AllTableColumns) {
-                    AllTableColumns a = (AllTableColumns) i;
-                    Table tab = a.getTable();
-                    System.out.println(Global.tables.keySet());
-                    System.out.println(tab.getName());
-                    for (String j : Global.tables.get(tab.getName()).keySet()) {
-                        SelectExpressionItem expItem = new SelectExpressionItem();
-                        j = j.substring(j.indexOf(".") + 1);
-                        expItem.setAlias(j);
-                        expItem.setExpression(new Column(tab, j));
-                        list.add(expItem);
-                    }
-                } else {
-                    list.add(i);
-                }
-            }
-            body.setSelectItems(list);
-            System.out.println(list);
-            System.out.println(body.getSelectItems());
             String tableFile = Global.dataDir.toString() + File.separator + t.getName() + ".dat";
             ItratorImp readOp = new ScanItrator(new File(tableFile), t);
             op = Execute.executeSelect(readOp,
                     t,
                     body.getWhere(),
                     body.getSelectItems(),
-                    (ArrayList<Join>) body.getJoins(),
+                    joins,
                     (ArrayList<Column>) body.getGroupByColumnReferences(),
                     body.getHaving(),
                     allCol,
@@ -149,8 +142,8 @@ public class SQLSelect {
         Global.tableAlias.put(t.getAlias(), t);
 
         if (!Global.tables.containsKey(t.getAlias())) {
-            HashMap<String, Integer> tempSchema = Global.tables.get(t.getName());
-            HashMap<String, Integer> newSchema = new HashMap<String, Integer>();
+            LinkedHashMap<String, Integer> tempSchema = Global.tables.get(t.getName());
+            LinkedHashMap<String, Integer> newSchema = new LinkedHashMap<String, Integer>();
             for (String key : tempSchema.keySet()) {
                 String[] temp = key.split("\\.");
                 newSchema.put(t.getAlias() + "." + temp[1], tempSchema.get(key));
@@ -160,7 +153,7 @@ public class SQLSelect {
     }
 
     public static void createSchema(List<SelectItem> selectItems, Table t, FromItem fromItem) {
-        HashMap<String, Integer> schema = new HashMap<String, Integer>();
+        LinkedHashMap<String, Integer> schema = new LinkedHashMap<String, Integer>();
         if ((selectItems.get(0) instanceof AllColumns) || (selectItems.get(0) instanceof AllTableColumns)) {
             Table table = (Table) fromItem;
             schema = (Global.tables.get(table.getName()));
@@ -178,10 +171,15 @@ public class SQLSelect {
 
         if (body instanceof PlainSelect) {
             ItratorImp oper = getOperator((PlainSelect) body);
-            Execute.print(oper);
+            Execute.dump(oper);
         } else if (body instanceof Union) {
             List<PlainSelect> plainSelects = ((Union) body).getPlainSelects();
-
+            ItratorImp current = getOperator(plainSelects.get(0));
+            current = new DistinctItrator(current);
+            for (PlainSelect i : plainSelects.subList(1, plainSelects.size())) {
+                current = Execute.executeUnion(current, new DistinctItrator(getOperator(i)));
+            }
+            Execute.dump(current);
         }
         return "";
     }

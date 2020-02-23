@@ -6,6 +6,7 @@ import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.Function;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
+import net.sf.jsqlparser.statement.select.AllTableColumns;
 import net.sf.jsqlparser.statement.select.SelectExpressionItem;
 import net.sf.jsqlparser.statement.select.SelectItem;
 
@@ -15,7 +16,7 @@ import java.util.HashMap;
 import java.util.List;
 
 public class ProjectionItrator implements ItratorImp {
- 
+
     ItratorImp op;
     Object[] tuple;
     ArrayList<SelectItem> toProject;
@@ -23,7 +24,7 @@ public class ProjectionItrator implements ItratorImp {
     HashMap<String, Integer> schema;
     boolean allColumns;
 
-    public ProjectionHelper(ItratorImp op, List<SelectItem> p, Table table, boolean allColumns) {
+    public ProjectionItrator(ItratorImp op, List<SelectItem> p, Table table, boolean allColumns) {
 
         this.op = op;
         this.tuple = new Object[p.size()];
@@ -48,11 +49,30 @@ public class ProjectionItrator implements ItratorImp {
         int index = 0;
         if (temp == null)
             return null;
-        if (allColumns)
+        if (allColumns) {
             return temp;
+        }
+        ArrayList<SelectItem> list = new ArrayList<>();
+        for (SelectItem f : toProject) {
+            if (f instanceof AllTableColumns) {
+                AllTableColumns a = (AllTableColumns) f;
+                Table tab = a.getTable();
+                for (String j : Global.tables.get(tab.getName()).keySet()) {
+                    SelectExpressionItem expItem = new SelectExpressionItem();
+                    j = j.substring(j.indexOf(".") + 1);
+                    expItem.setAlias(j);
+                    expItem.setExpression(new Column(tab, j));
+                    list.add(expItem);
+                }
+            } else {
+                list.add(f);
+            }
+        }
+//        System.out.println(Arrays.deepToString(list.toArray()));
+        toProject = list;
+        tuple = new Object[toProject.size()];
         for (SelectItem f : toProject) {
             try {
-
                 SelectExpressionItem e = (SelectExpressionItem) f;
                 if (e.getExpression() instanceof Function) {
                     Expression x = new Column(null, e.getExpression().toString());
@@ -73,3 +93,5 @@ public class ProjectionItrator implements ItratorImp {
     public Table getTable() {
         return table;
     }
+
+}

@@ -5,7 +5,7 @@ import net.sf.jsqlparser.statement.create.table.ColumnDefinition;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 
 
@@ -16,9 +16,9 @@ public class SQLCreateTable {
         this.sql = stmt;
     }
 
-    public void getResult() {
+    public void getResult() throws Exception {
         String tableName = sql.getTable().getName().toUpperCase();
-        HashMap<String, Integer> cols = new HashMap<String, Integer>();
+        LinkedHashMap<String, Integer> cols = new LinkedHashMap<String, Integer>();
         ArrayList<String> dataType = new ArrayList<String>();
         if (Global.tables != null && !Global.tables.containsKey(tableName)) {
             List<ColumnDefinition> list = sql.getColumnDefinitions();
