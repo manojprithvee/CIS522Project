@@ -30,6 +30,7 @@ public class Execute {
     }
 
 
+
     public static void dump(ItratorImp input) {
         Object[] row = input.next();
         while (row != null) {
@@ -50,6 +51,8 @@ public class Execute {
     }
 
     public static ItratorImp executeUnion(ItratorImp current, ItratorImp operator) {
-        return new UnionItator(current, operator);
+        ItratorImp output = new UnionItator(current, operator);
+        output = new DistinctItrator(output);
+        return output;
     }
 }

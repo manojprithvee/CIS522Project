@@ -69,7 +69,6 @@ public class CrossProductItrator implements ItratorImp {
         }
         return dataType;
     }
-
     @Override
     public Object[] next() {
         temp2 = readOps.get(1).next();

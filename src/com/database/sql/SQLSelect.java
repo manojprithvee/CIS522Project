@@ -79,8 +79,12 @@ public class SQLSelect {
         ArrayList<Table> joins = new ArrayList<Table>();
         ArrayList<String> tablenames = new ArrayList<>();
         tablenames.add(body.getFromItem().getAlias());
+        Expression expressionjoin = null;
         if (body.getJoins() != null) {
             for (Join join : body.getJoins()) {
+                if (join.getOnExpression() != null) {
+                    expressionjoin = join.getOnExpression();
+                }
                 Table tx = (Table) join.getRightItem();
                 if (tablenames.contains(tx.getName())) {
                     if (tx.getAlias() == null) {
@@ -92,6 +96,7 @@ public class SQLSelect {
                 i += 1;
             }
         }
+        Expression where;
         if (body.getFromItem() instanceof SubSelect) {
             t = new Table();
             if (body.getFromItem().getAlias() == null) {
@@ -104,9 +109,15 @@ public class SQLSelect {
 
             createSchema(((PlainSelect) ((SubSelect) body.getFromItem()).getSelectBody()).getSelectItems(), t, ((PlainSelect) ((SubSelect) body.getFromItem()).getSelectBody()).getFromItem());
             op = getOperator((PlainSelect) ((SubSelect) body.getFromItem()).getSelectBody());
+
+            if (expressionjoin == null) {
+                where = body.getWhere();
+            } else {
+                where = expressionjoin;
+            }
             op = Execute.executeSelect(op,
                     t,
-                    body.getWhere(),
+                    where,
                     body.getSelectItems(),
                     joins,
                     (ArrayList<Column>) body.getGroupByColumnReferences(),
@@ -122,9 +133,14 @@ public class SQLSelect {
             ArrayList<SelectItem> list = new ArrayList<>();
             String tableFile = Global.dataDir.toString() + File.separator + t.getName() + ".dat";
             ItratorImp readOp = new ScanItrator(new File(tableFile), t);
+            if (expressionjoin == null) {
+                where = body.getWhere();
+            } else {
+                where = expressionjoin;
+            }
             op = Execute.executeSelect(readOp,
                     t,
-                    body.getWhere(),
+                    where,
                     body.getSelectItems(),
                     joins,
                     (ArrayList<Column>) body.getGroupByColumnReferences(),
