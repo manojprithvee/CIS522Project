@@ -2,18 +2,23 @@ package com.database;
 
 import com.database.helpers.*;
 import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.expression.Function;
 import net.sf.jsqlparser.expression.StringValue;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.select.Limit;
+import net.sf.jsqlparser.statement.select.SelectExpressionItem;
 import net.sf.jsqlparser.statement.select.SelectItem;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class Execute {
-    public static ItratorImp executeSelect(ItratorImp op, Table table, Expression condition, List<SelectItem> list, ArrayList<Table> joins, ArrayList<Column> groupByColumnReferences, Expression having, boolean allColumns, Limit limit) {
 
+
+    public static ItratorImp executeSelect(ItratorImp op, Table table, Expression where, Expression condition, List<SelectItem> list, ArrayList<Table> joins, ArrayList<Column> groupByColumnReferences, Expression having, boolean allColumns, Limit limit) {
+        ArrayList<Function> functions = new ArrayList<>();
+        boolean isAggregate = false;
         ItratorImp oper = op;
         if (joins != null) {
             for (int i = 0; i < joins.size(); i++) {
@@ -23,9 +28,25 @@ public class Execute {
             }
             table = oper.getTable();
         }
+        if (where != null)
+            oper = new SelectionItrator(oper, Global.tables.get(table.getAlias()), where);
         if (condition != null)
             oper = new SelectionItrator(oper, Global.tables.get(table.getAlias()), condition);
-        oper = new ProjectionItrator(oper, list, table, allColumns);
+        if (!allColumns) {
+
+
+            for (int i = 0; i < list.size(); i++) {
+                SelectExpressionItem selectitem = (SelectExpressionItem) list.get(i);
+                if (selectitem.getExpression() instanceof Function) {
+                    functions.add((Function) selectitem.getExpression());
+                    isAggregate = true;
+                }
+            }
+        }
+        if (isAggregate)
+            oper = new AggregateItrator(oper, Global.tables.get(table.getAlias()), functions, table);
+        else
+            oper = new ProjectionItrator(oper, list, table, allColumns);
         return oper;
     }
 

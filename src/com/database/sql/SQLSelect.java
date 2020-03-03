@@ -109,15 +109,10 @@ public class SQLSelect {
 
             createSchema(((PlainSelect) ((SubSelect) body.getFromItem()).getSelectBody()).getSelectItems(), t, ((PlainSelect) ((SubSelect) body.getFromItem()).getSelectBody()).getFromItem());
             op = getOperator((PlainSelect) ((SubSelect) body.getFromItem()).getSelectBody());
-
-            if (expressionjoin == null) {
-                where = body.getWhere();
-            } else {
-                where = expressionjoin;
-            }
             op = Execute.executeSelect(op,
                     t,
-                    where,
+                    body.getWhere(),
+                    expressionjoin,
                     body.getSelectItems(),
                     joins,
                     (ArrayList<Column>) body.getGroupByColumnReferences(),
@@ -133,14 +128,10 @@ public class SQLSelect {
             ArrayList<SelectItem> list = new ArrayList<>();
             String tableFile = Global.dataDir.toString() + File.separator + t.getName() + ".dat";
             ItratorImp readOp = new ScanItrator(new File(tableFile), t);
-            if (expressionjoin == null) {
-                where = body.getWhere();
-            } else {
-                where = expressionjoin;
-            }
             op = Execute.executeSelect(readOp,
                     t,
-                    where,
+                    body.getWhere(),
+                    expressionjoin,
                     body.getSelectItems(),
                     joins,
                     (ArrayList<Column>) body.getGroupByColumnReferences(),

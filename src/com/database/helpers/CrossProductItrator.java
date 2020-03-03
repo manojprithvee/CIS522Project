@@ -55,7 +55,8 @@ public class CrossProductItrator implements ItratorImp {
 
     @Override
     public void reset() {
-        counter = 0;
+        readOps.get(0).reset();
+        readOps.get(1).reset();
     }
 
 
