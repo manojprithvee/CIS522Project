@@ -6,6 +6,7 @@ import net.sf.jsqlparser.expression.Function;
 import net.sf.jsqlparser.expression.StringValue;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
+import net.sf.jsqlparser.statement.select.AllTableColumns;
 import net.sf.jsqlparser.statement.select.Limit;
 import net.sf.jsqlparser.statement.select.SelectExpressionItem;
 import net.sf.jsqlparser.statement.select.SelectItem;
@@ -36,10 +37,12 @@ public class Execute {
 
 
             for (int i = 0; i < list.size(); i++) {
-                SelectExpressionItem selectitem = (SelectExpressionItem) list.get(i);
-                if (selectitem.getExpression() instanceof Function) {
-                    functions.add((Function) selectitem.getExpression());
-                    isAggregate = true;
+                if (!(list.get(i) instanceof AllTableColumns)) {
+                    SelectExpressionItem selectitem = (SelectExpressionItem) list.get(i);
+                    if (selectitem.getExpression() instanceof Function) {
+                        functions.add((Function) selectitem.getExpression());
+                        isAggregate = true;
+                    }
                 }
             }
         }

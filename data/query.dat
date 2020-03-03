@@ -1,5 +1,5 @@
-create table r(a int, b int)
-create table x(a int, b int, c int)
-select r.a,x.* from r,x
-select * from r,r
-select count(*) from r
+create table r(a int, b int);
+create table x(a int, b int, c int);
+select r.a,x.* from r,x;
+select * from r,r;
+select count(*) from r;
