@@ -7,7 +7,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.Set;
 
 public class CrossProductIterator implements DB_Iterator {
 
@@ -52,7 +51,6 @@ public class CrossProductIterator implements DB_Iterator {
     ArrayList<String> create_new_schema(HashMap<String, Integer> newSchema, Table lefttable, Table righttable, ArrayList<String> dataType) {
         LinkedHashMap<String, Integer> oldschema = Global.list_tables.get(lefttable.getAlias());
         dataType.addAll(Global.schema_store.get(lefttable.getName()));
-        Set<String> ab = oldschema.keySet();
         int sizes = 0;
         for (String col : oldschema.keySet()) {
             newSchema.put(col, oldschema.get(col) + sizes);
