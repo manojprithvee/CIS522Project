@@ -1,13 +1,15 @@
 package com.database.helpers;
 
-        import net.sf.jsqlparser.schema.Table;
+import net.sf.jsqlparser.schema.Table;
+
+import java.sql.SQLException;
 
 
 public interface DB_Iterator {
 
     void reset();
 
-    Object[] next();
+    Object[] next() throws SQLException;
 
     Table getTable();
 }

@@ -9,6 +9,7 @@ import net.sf.jsqlparser.statement.select.AllTableColumns;
 import net.sf.jsqlparser.statement.select.SelectExpressionItem;
 import net.sf.jsqlparser.statement.select.SelectItem;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -16,7 +17,7 @@ import java.util.List;
 public class Execute {
 
 
-    public static DB_Iterator select_tree(DB_Iterator op, Expression where, Expression condition, List<SelectItem> list, Table table, boolean allColumns, ArrayList<Table> joins) {
+    public static DB_Iterator select_tree(DB_Iterator op, Expression where, Expression condition, List<SelectItem> list, Table table, boolean allColumns, ArrayList<Table> joins) throws SQLException {
         boolean ifagg = false;
         DB_Iterator oper = op;
         Global.column_used = new ArrayList<>();
@@ -52,7 +53,7 @@ public class Execute {
     }
 
 
-    public static void print(DB_Iterator input) {
+    public static void print(DB_Iterator input) throws SQLException {
         Object[] row = input.next();
         if (row != null) {
             do {

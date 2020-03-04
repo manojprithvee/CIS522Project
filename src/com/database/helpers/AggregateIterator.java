@@ -4,6 +4,7 @@ import net.sf.jsqlparser.expression.Function;
 import net.sf.jsqlparser.expression.LongValue;
 import net.sf.jsqlparser.schema.Table;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 
 public class AggregateIterator implements DB_Iterator {
@@ -23,13 +24,29 @@ public class AggregateIterator implements DB_Iterator {
     }
 
     @Override
-    public Object[] next() {
-        Object[] obj = new Object[aggregator.size()];
-        for (int i = 0; i < aggregator.size(); i++) {
-            Object l = count();
-            if (l == null)
-                return null;
+    public Object[] next() throws SQLException {
+        Object[] obj;
+        obj = new Object[aggregator.size()];
+        int i = 0;
+        while (i < aggregator.size()) {
+            Object l;
+            Object[] row = oper.next();
+            if (row == null)
+                l = null;
+            else {
+                int count;
+                count = 0;
+                count++;
+                row = oper.next();
+                while (row != null) {
+                    count++;
+                    row = oper.next();
+                }
+                l = new LongValue(Integer.toString(count));
+            }
+            if (l == null) return null;
             obj[i] = l;
+            i++;
         }
         return obj;
     }
@@ -37,22 +54,5 @@ public class AggregateIterator implements DB_Iterator {
     @Override
     public Table getTable() {
         return table;
-    }
-
-    private Object count() {
-        Object[] row;
-        row = oper.next();
-        int count = 0;
-        if (row == null)
-            return null;
-
-        do {
-            count++;
-            row = oper.next();
-
-        } while (row != null);
-
-
-        return new LongValue(Integer.toString(count));
     }
 }

@@ -4,6 +4,7 @@ import com.database.Global;
 import net.sf.jsqlparser.schema.Table;
 
 import java.io.File;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -16,7 +17,7 @@ public class CrossProductIterator implements DB_Iterator {
     private Object[] temp1;
 
     public CrossProductIterator(DB_Iterator oper, Table righttable,
-                                Table lefttable) {
+                                Table lefttable) throws SQLException {
 
         leftIterator = oper;
         String dataFileName = righttable.getName() + ".dat";
@@ -65,7 +66,7 @@ public class CrossProductIterator implements DB_Iterator {
     }
 
     @Override
-    public Object[] next() {
+    public Object[] next() throws SQLException {
         Object[] temp2 = rightIterator.next();
         if (temp2 == null) {
             temp1 = leftIterator.next();
@@ -74,23 +75,22 @@ public class CrossProductIterator implements DB_Iterator {
             rightIterator.reset();
             temp2 = rightIterator.next();
         }
-        return createTuple(temp1, temp2);
+        return create_row(temp1, temp2);
     }
 
 
-    public Object[] createTuple(Object[] toReturn1, Object[] toReturn2) {
-        Object[] toReturn = new Object[size];
+    public Object[] create_row(Object[] left, Object[] right) {
+        Object[] new_row = new Object[size];
         int index = 0;
-        for (Object o : toReturn1) {
-            toReturn[index] = o;
+        for (Object o : left) {
+            new_row[index] = o;
             index++;
         }
-
-        for (Object o : toReturn2) {
-            toReturn[index] = o;
+        for (Object o : right) {
+            new_row[index] = o;
             index++;
         }
-        return toReturn;
+        return new_row;
     }
 
     @Override

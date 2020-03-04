@@ -13,13 +13,14 @@ import net.sf.jsqlparser.statement.select.SelectItem;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 
 public class ProjectionIterator implements DB_Iterator {
 
     final DB_Iterator op;
     final Table table;
-    ArrayList<SelectItem> toProject;
+    ArrayList<SelectItem> to_keep;
     final HashMap<String, Integer> schema;
     final boolean allColumns;
     Object[] row;
@@ -28,7 +29,7 @@ public class ProjectionIterator implements DB_Iterator {
 
         this.op = op;
         this.row = new Object[p.size()];
-        this.toProject = (ArrayList<SelectItem>) p;
+        this.to_keep = (ArrayList<SelectItem>) p;
         this.table = table;
         this.schema = Global.list_tables.get(table.getAlias());
         this.allColumns = allColumns;
@@ -41,24 +42,26 @@ public class ProjectionIterator implements DB_Iterator {
     }
 
     @Override
-    public Object[] next() {
+    public Object[] next() throws SQLException {
 
         Object[] temp = op.next();
         Evaluator eval = new Evaluator(schema, temp);
 
         int index = 0;
-        if (temp == null)
-            return null;
-        if (allColumns) {
-            return temp;
-        }
+        if (temp == null) return null;
+        if (allColumns) return temp;
         ArrayList<SelectItem> list = new ArrayList<>();
-        for (SelectItem f : toProject) {
+        for (int i = 0, toProjectSize = to_keep.size(); i < toProjectSize; i++) {
+            SelectItem f;
+            f = to_keep.get(i);
             if (f instanceof AllTableColumns) {
                 AllTableColumns a = (AllTableColumns) f;
                 Table tab = a.getTable();
-                for (String j : Global.list_tables.get(tab.getName()).keySet()) {
-                    SelectExpressionItem expItem = new SelectExpressionItem();
+                for (Iterator<String> iterator = Global.list_tables.get(tab.getName()).keySet().iterator(); iterator.hasNext(); ) {
+                    String j;
+                    j = iterator.next();
+                    SelectExpressionItem expItem;
+                    expItem = new SelectExpressionItem();
                     j = j.substring(j.indexOf(".") + 1);
                     expItem.setAlias(j);
                     expItem.setExpression(new Column(tab, j));
@@ -68,17 +71,18 @@ public class ProjectionIterator implements DB_Iterator {
                 list.add(f);
             }
         }
-        toProject = list;
-        row = new Object[toProject.size()];
-        for (SelectItem f : toProject) {
+        to_keep = list;
+        row = new Object[to_keep.size()];
+        for (int i = 0; i < to_keep.size(); i++) {
+            SelectItem f = to_keep.get(i);
             try {
-                SelectExpressionItem e = (SelectExpressionItem) f;
+                SelectExpressionItem e;
+                e = (SelectExpressionItem) f;
                 if (e.getExpression() instanceof Function) {
-                    Expression x = new Column(null, e.getExpression().toString());
+                    Expression x;
+                    x = new Column(null, e.getExpression().toString());
                     row[index] = eval.eval(x);
-                } else {
-                    row[index] = eval.eval(e.getExpression());
-                }
+                } else row[index] = eval.eval(e.getExpression());
             } catch (SQLException e1) {
                 System.out.println("error in ProjectIterator");
             }

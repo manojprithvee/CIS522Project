@@ -10,6 +10,7 @@ import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.select.*;
 
 import java.io.File;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -39,7 +40,7 @@ public class SQLSelect {
         }
     }
 
-    public static DB_Iterator getIterator(PlainSelect body) {
+    public static DB_Iterator getIterator(PlainSelect body) throws SQLException {
         Table t;
         DB_Iterator op;
         boolean allCol;
@@ -132,18 +133,18 @@ public class SQLSelect {
         Global.list_tables.put(t.getAlias(), schema);
     }
 
-    public void getResult() {
+    public void getResult() throws SQLException {
         SelectBody body = sql.getSelectBody();
+        DB_Iterator current = null;
         if (body instanceof PlainSelect) {
-            DB_Iterator oper = getIterator((PlainSelect) body);
-            Execute.print(oper);
+            current = getIterator((PlainSelect) body);
         } else if (body instanceof Union) {
             List<PlainSelect> plainSelects = ((Union) body).getPlainSelects();
-            DB_Iterator current = getIterator(plainSelects.get(0));
+            current = getIterator(plainSelects.get(0));
             for (PlainSelect i : plainSelects.subList(1, plainSelects.size())) {
                 current = Execute.union_tree(current, getIterator(i));
             }
-            Execute.print(current);
         }
+        Execute.print(current);
     }
 }

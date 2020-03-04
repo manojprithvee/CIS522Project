@@ -66,31 +66,26 @@ public class ScanIterator implements DB_Iterator {
 
         if (line == null)
             return null;
-        Object[] row = new Object[line.size()];
-        ArrayList<String> dataType = Global.schema_store.get(table.getName().toUpperCase());
-        for (int i = 0; i < line.size(); i++) {
-            switch (dataType.get(i).toUpperCase()) {
-                case "INT":
-                    row[i] = new LongValue(line.get(i));
-                    break;
-                case "DECIMAL":
-                case "DOUBLE":
-                    row[i] = new DoubleValue(line.get(i));
-                    break;
-                case "DATE":
-                    row[i] = new DateValue(line.get(i));
-                    break;
-                case "CHAR":
-                case "STRING":
-                case "VARCHAR":
+        Object[] row;
+        ArrayList<String> dataType;
+        row = new Object[line.size()];
+        dataType = Global.schema_store.get(table.getName().toUpperCase());
+        int i = 0;
+        while (i < line.size()) {
+            if ("INT".equals(dataType.get(i).toUpperCase())) {
+                row[i] = new LongValue(line.get(i));
+            } else if ("DECIMAL".equals(dataType.get(i).toUpperCase()) || "DOUBLE".equals(dataType.get(i).toUpperCase())) {
+                row[i] = new DoubleValue(line.get(i));
+            } else if ("DATE".equals(dataType.get(i).toUpperCase())) {
+                row[i] = new DateValue(line.get(i));
+            } else if ("CHAR".equals(dataType.get(i).toUpperCase()) || "STRING".equals(dataType.get(i).toUpperCase()) || "VARCHAR".equals(dataType.get(i).toUpperCase())) {
+                row[i] = new StringValue(line.get(i));
+            } else {
+                if (dataType.get(i).contains("CHAR")) {
                     row[i] = new StringValue(line.get(i));
-                    break;
-                default: {
-                    if (dataType.get(i).contains("CHAR")) {
-                        row[i] = new StringValue(line.get(i));
-                    }
                 }
             }
+            i++;
         }
         return row;
 
