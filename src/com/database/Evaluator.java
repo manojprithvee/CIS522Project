@@ -5,6 +5,7 @@ import net.sf.jsqlparser.expression.PrimitiveValue;
 import net.sf.jsqlparser.schema.Column;
 
 import java.util.HashMap;
+import java.util.Iterator;
 
 
 public class Evaluator extends Eval {
@@ -24,17 +25,19 @@ public class Evaluator extends Eval {
     public PrimitiveValue eval(Column main_column) {
         String table;
         int id = 0;
-        if (main_column.getTable() != null && main_column.getTable().getName() != null) {
+        if ((main_column.getTable() != null) && (main_column.getTable().getName() != null)) {
             table = main_column.getTable().getName();
             if (!structure.containsKey(table + "." + main_column.getColumnName())) {
-                for (String key : structure.keySet()) {
+                for (Iterator<String> iterator = structure.keySet().iterator(); iterator.hasNext(); ) {
+                    String key = iterator.next();
                     String x = key.substring(key.indexOf(".") + 1);
                     if (x.equals(main_column.getTable() + "." + main_column.getColumnName())) id = structure.get(key);
                 }
             } else id = structure.get(table + "." + main_column.getColumnName());
         } else {
             if (!Global.rename.containsKey(main_column.getColumnName())) {
-                for (String column : structure.keySet()) {
+                for (Iterator<String> iterator = structure.keySet().iterator(); iterator.hasNext(); ) {
+                    String column = iterator.next();
                     String x = column.substring(column.indexOf(".") + 1);
                     if (x.equals(main_column.getColumnName())) id = structure.get(column);
                 }
@@ -43,7 +46,8 @@ public class Evaluator extends Eval {
                 else if (structure.containsKey(Global.rename.get(main_column.getColumnName()).toString()))
                     id = structure.get(Global.rename.get(main_column.getColumnName()).toString());
                 else {
-                    for (String column : structure.keySet()) {
+                    for (Iterator<String> iterator = structure.keySet().iterator(); iterator.hasNext(); ) {
+                        String column = iterator.next();
                         String x = column.substring(column.indexOf(".") + 1);
                         if (x.equals(main_column.getColumnName())) id = structure.get(column);
                     }

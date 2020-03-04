@@ -10,6 +10,7 @@ import net.sf.jsqlparser.statement.select.SelectExpressionItem;
 import net.sf.jsqlparser.statement.select.SelectItem;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 public class Execute {
@@ -19,13 +20,14 @@ public class Execute {
         boolean ifagg = false;
         DB_Iterator oper = op;
         Global.column_used = new ArrayList<>();
-        ArrayList<Function> aggregator = new ArrayList<>();
+        var aggregator = new ArrayList<Function>();
         if (!allColumns) {
-            for (SelectItem item : list) {
+            for (Iterator<SelectItem> iterator = list.iterator(); iterator.hasNext(); ) {
+                SelectItem item = iterator.next();
                 if (!(item instanceof AllTableColumns)) {
-                    SelectExpressionItem Expitem = (SelectExpressionItem) item;
-                    if (Expitem.getExpression() instanceof Function) {
-                        aggregator.add((Function) Expitem.getExpression());
+                    SelectExpressionItem exp_item = (SelectExpressionItem) item;
+                    if (exp_item.getExpression() instanceof Function) {
+                        aggregator.add((Function) exp_item.getExpression());
                         ifagg = true;
                     }
                 }
@@ -52,20 +54,24 @@ public class Execute {
 
     public static void print(DB_Iterator input) {
         Object[] row = input.next();
-        while (row != null) {
-            int i;
-            for (i = 0; i < row.length - 1; i++) {
+        if (row != null) {
+            do {
+                int i;
+                i = 0;
+                while (i < row.length - 1) {
+                    if (row[i] instanceof StringValue) {
+                        System.out.print(((StringValue) row[i]).getNotExcapedValue() + "|");
+                    } else
+                        System.out.print(row[i] + "|");
+                    i++;
+                }
                 if (row[i] instanceof StringValue) {
-                    System.out.print(((StringValue) row[i]).getNotExcapedValue() + "|");
+                    System.out.print(((StringValue) row[i]).getNotExcapedValue());
                 } else
-                    System.out.print(row[i] + "|");
-            }
-            if (row[i] instanceof StringValue) {
-                System.out.print(((StringValue) row[i]).getNotExcapedValue());
-            } else
-                System.out.print(row[i]);
-            System.out.println();
-            row = input.next();
+                    System.out.print(row[i]);
+                System.out.println();
+                row = input.next();
+            } while (row != null);
         }
     }
 
