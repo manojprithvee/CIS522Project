@@ -23,14 +23,17 @@ public class DistinctIterator implements DB_Iterator {
 
     @Override
     public Object[] next() throws SQLException {
-        Object[] nextRow = DB_Iterator.next();
-        if (nextRow == null) return null;
-        if (buffer.contains(Arrays.asList(nextRow))) {
-            return next();
-        } else {
-            buffer.add(Arrays.asList(nextRow));
-            return nextRow;
+        Object[] row;
+        row = DB_Iterator.next();
+        while (true) {
+            if (row == null) break;
+            if (!buffer.contains(Arrays.asList(row))) {
+                buffer.add(Arrays.asList(row));
+                return row;
+            }
+            row = DB_Iterator.next();
         }
+        return null;
     }
 
     @Override
