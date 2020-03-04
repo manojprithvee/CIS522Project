@@ -5,7 +5,7 @@ import net.sf.jsqlparser.schema.Table;
 public class UnionIterator implements DB_Iterator {
     final DB_Iterator left;
     final DB_Iterator right;
-    boolean leftdone = false;
+    boolean left_done = false;
 
     public UnionIterator(DB_Iterator left, DB_Iterator right) {
         this.left = left;
@@ -21,12 +21,12 @@ public class UnionIterator implements DB_Iterator {
     @Override
     public Object[] next() {
         Object[] lout;
-        if (!leftdone)
+        if (!left_done)
             lout = left.next();
         else
             lout = null;
         if (lout == null) {
-            leftdone = true;
+            left_done = true;
             return right.next();
         } else {
             return lout;

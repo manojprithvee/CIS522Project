@@ -21,31 +21,31 @@ public class Evaluator extends Eval {
         this.row = row;
     }
 
-    public PrimitiveValue eval(Column maincolumn) {
+    public PrimitiveValue eval(Column main_column) {
         String table;
         int id = 0;
-        if (maincolumn.getTable() != null && maincolumn.getTable().getName() != null) {
-            table = maincolumn.getTable().getName();
-            if (!structure.containsKey(table + "." + maincolumn.getColumnName())) {
+        if (main_column.getTable() != null && main_column.getTable().getName() != null) {
+            table = main_column.getTable().getName();
+            if (!structure.containsKey(table + "." + main_column.getColumnName())) {
                 for (String key : structure.keySet()) {
                     String x = key.substring(key.indexOf(".") + 1);
-                    if (x.equals(maincolumn.getTable() + "." + maincolumn.getColumnName())) id = structure.get(key);
+                    if (x.equals(main_column.getTable() + "." + main_column.getColumnName())) id = structure.get(key);
                 }
-            } else id = structure.get(table + "." + maincolumn.getColumnName());
+            } else id = structure.get(table + "." + main_column.getColumnName());
         } else {
-            if (!Global.rename.containsKey(maincolumn.getColumnName())) {
+            if (!Global.rename.containsKey(main_column.getColumnName())) {
                 for (String column : structure.keySet()) {
                     String x = column.substring(column.indexOf(".") + 1);
-                    if (x.equals(maincolumn.getColumnName())) id = structure.get(column);
+                    if (x.equals(main_column.getColumnName())) id = structure.get(column);
                 }
             } else {
-                if (structure.containsKey(maincolumn.getColumnName())) id = structure.get(maincolumn.getColumnName());
-                else if (structure.containsKey(Global.rename.get(maincolumn.getColumnName()).toString()))
-                    id = structure.get(Global.rename.get(maincolumn.getColumnName()).toString());
+                if (structure.containsKey(main_column.getColumnName())) id = structure.get(main_column.getColumnName());
+                else if (structure.containsKey(Global.rename.get(main_column.getColumnName()).toString()))
+                    id = structure.get(Global.rename.get(main_column.getColumnName()).toString());
                 else {
                     for (String column : structure.keySet()) {
                         String x = column.substring(column.indexOf(".") + 1);
-                        if (x.equals(maincolumn.getColumnName())) id = structure.get(column);
+                        if (x.equals(main_column.getColumnName())) id = structure.get(column);
                     }
                 }
             }

@@ -55,14 +55,14 @@ public class Execute {
         while (row != null) {
             int i;
             for (i = 0; i < row.length - 1; i++) {
-                if (row[i] instanceof StringValue)
+                if (row[i] instanceof StringValue) {
                     System.out.print(((StringValue) row[i]).getNotExcapedValue() + "|");
-                else
+                } else
                     System.out.print(row[i] + "|");
             }
-            if (row[i] instanceof StringValue)
+            if (row[i] instanceof StringValue) {
                 System.out.print(((StringValue) row[i]).getNotExcapedValue());
-            else
+            } else
                 System.out.print(row[i]);
             System.out.println();
             row = input.next();
