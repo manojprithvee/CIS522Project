@@ -32,7 +32,7 @@ public class AggregateIterator implements DB_Iterator {
             Object l;
             Object[] row = oper.next();
             if (row == null)
-                l = null;
+                return null;
             else {
                 int count;
                 count = 0;
@@ -44,7 +44,6 @@ public class AggregateIterator implements DB_Iterator {
                 }
                 l = new LongValue(Integer.toString(count));
             }
-            if (l == null) return null;
             obj[i] = l;
             i++;
         }
