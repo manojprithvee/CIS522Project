@@ -32,9 +32,7 @@ public class Evaluator extends Eval {
                     if (x.equals(maincolumn.getTable() + "." + maincolumn.getColumnName())) id = structure.get(key);
                 }
 
-            } else {
-                id = structure.get(table + "." + maincolumn.getColumnName());
-            }
+            } else id = structure.get(table + "." + maincolumn.getColumnName());
         } else {
             if (!Global.rename.containsKey(maincolumn.getColumnName())) {
                 for (String column : structure.keySet()) {
