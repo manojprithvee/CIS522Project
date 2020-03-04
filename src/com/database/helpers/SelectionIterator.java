@@ -16,7 +16,7 @@ public class SelectionIterator implements DB_Iterator {
     final HashMap<String, Integer> schema;
     final Expression condition;
 
-    public SelectionIterator(DB_Iterator input, HashMap<String, Integer> schema, Expression condition) {
+    public SelectionIterator(DB_Iterator input, Expression condition, HashMap<String, Integer> schema) {
 
         this.op = input;
         this.schema = schema;

@@ -16,17 +16,28 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 
 public class ScanIterator implements DB_Iterator {
     final Table table;
+    private final boolean full;
     File file;
     BufferedReader br = null;
     Iterator scan = null;
+    private List<CSVRecord> data;
 
     public ScanIterator(File f, Table table) {
         this.file = f;
         this.table = table;
+        this.full = false;
+        reset();
+    }
+
+    public ScanIterator(File f, Table table, boolean full) {
+        this.file = f;
+        this.table = table;
+        this.full = full;
         reset();
     }
 
@@ -34,7 +45,13 @@ public class ScanIterator implements DB_Iterator {
     public void reset() {
         try {
             br = new BufferedReader(new FileReader(file));
-            scan = new CSVParser(br, CSVFormat.DEFAULT.withDelimiter('|')).iterator();
+            CSVParser parser = new CSVParser(br, CSVFormat.DEFAULT.withDelimiter('|'));
+            if (full) {
+                if (data == null) data = parser.getRecords();
+                scan = data.iterator();
+            } else {
+                scan = parser.iterator();
+            }
         } catch (IOException e) {
             System.out.println("error");
         }
@@ -78,6 +95,7 @@ public class ScanIterator implements DB_Iterator {
         return row;
 
     }
+
 
     @Override
     public Table getTable() {

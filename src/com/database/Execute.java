@@ -15,11 +15,22 @@ import java.util.List;
 public class Execute {
 
 
-    public static DB_Iterator executeSelect(DB_Iterator op, Table table, Expression where, Expression condition, List<SelectItem> list, ArrayList<Table> joins, boolean allColumns) {
-        ArrayList<Function> aggregator = new ArrayList<>();
-        boolean isAggregate = false;
+    public static DB_Iterator select_tree(DB_Iterator op, Expression where, Expression condition, List<SelectItem> list, Table table, boolean allColumns, ArrayList<Table> joins) {
+        boolean ifagg = false;
         DB_Iterator oper = op;
         Global.column_used = new ArrayList<>();
+        ArrayList<Function> aggregator = new ArrayList<>();
+        if (!allColumns) {
+            for (SelectItem item : list) {
+                if (!(item instanceof AllTableColumns)) {
+                    SelectExpressionItem Expitem = (SelectExpressionItem) item;
+                    if (Expitem.getExpression() instanceof Function) {
+                        aggregator.add((Function) Expitem.getExpression());
+                        ifagg = true;
+                    }
+                }
+            }
+        }
         if (joins != null && !joins.isEmpty()) {
             for (Table jointly : joins) {
                 oper = new CrossProductIterator(oper, jointly, table);
@@ -28,23 +39,10 @@ public class Execute {
             table = oper.getTable();
         }
         if (where != null)
-            oper = new SelectionIterator(oper, Global.list_tables.get(table.getAlias()), where);
+            oper = new SelectionIterator(oper, where, Global.list_tables.get(table.getAlias()));
         if (condition != null)
-            oper = new SelectionIterator(oper, Global.list_tables.get(table.getAlias()), condition);
-        if (!allColumns) {
-
-
-            for (SelectItem selectItem : list) {
-                if (!(selectItem instanceof AllTableColumns)) {
-                    SelectExpressionItem selectitem = (SelectExpressionItem) selectItem;
-                    if (selectitem.getExpression() instanceof Function) {
-                        aggregator.add((Function) selectitem.getExpression());
-                        isAggregate = true;
-                    }
-                }
-            }
-        }
-        if (isAggregate)
+            oper = new SelectionIterator(oper, condition, Global.list_tables.get(table.getAlias()));
+        if (ifagg)
             oper = new AggregateIterator(oper, aggregator, table);
         else
             oper = new ProjectionIterator(oper, list, table, allColumns);
@@ -71,7 +69,7 @@ public class Execute {
         }
     }
 
-    public static DB_Iterator executeUnion(DB_Iterator current, DB_Iterator operator) {
+    public static DB_Iterator union_tree(DB_Iterator current, DB_Iterator operator) {
         DB_Iterator output = new UnionIterator(current, operator);
         output = new DistinctIterator(output);
         return output;

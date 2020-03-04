@@ -7,72 +7,76 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.Set;
 
 public class CrossProductIterator implements DB_Iterator {
 
-    final ArrayList<DB_Iterator> readOps;
+    DB_Iterator leftIterator, rightIterator;
     final Table table;
     private final int size;
     private Object[] temp1;
 
-    public CrossProductIterator(DB_Iterator oper, Table joinTables,
-                                Table table) {
-        readOps = new ArrayList<>();
-        readOps.add(oper);
+    public CrossProductIterator(DB_Iterator oper, Table righttable,
+                                Table lefttable) {
 
-        String dataFileName = joinTables.getName() + ".dat";
+        leftIterator = oper;
+        String dataFileName = righttable.getName() + ".dat";
         dataFileName = Global.table_location.toString() + File.separator + dataFileName.toLowerCase();
         try {
-            readOps.add(new ScanIterator(new File(dataFileName), joinTables));
+            rightIterator = new ScanIterator(new File(dataFileName), righttable, true);
         } catch (NullPointerException e) {
             System.out.println("Null pointer exception in JoinOperator()");
         }
+
+
         LinkedHashMap<String, Integer> newSchema = new LinkedHashMap<>();
-        int size1 = Global.list_tables.get(table.getAlias()).size();
-        int size2 = Global.list_tables.get(joinTables.getAlias()).size();
+
         ArrayList<String> dataType = new ArrayList<>();
-        String newTableName = table.getAlias() + "," + joinTables.getAlias();
+        String newTableName = lefttable.getAlias() + "," + righttable.getAlias();
         this.table = new Table(newTableName, newTableName);
         this.table.setAlias(newTableName);
-        dataType = updateSchema(newSchema, 0, table, dataType);
-        dataType = updateSchema(newSchema, size1, joinTables, dataType);
+        dataType = create_new_schema(newSchema, lefttable, righttable, dataType);
         Global.list_tables.put(newTableName, newSchema);
         Global.schema_store.put(newTableName, dataType);
-        temp1 = readOps.get(0).next();
-
-        size = size1 + size2;
+        temp1 = leftIterator.next();
+        size = newSchema.size();
     }
 
     @Override
     public void reset() {
-        readOps.get(0).reset();
-        readOps.get(1).reset();
+        leftIterator.reset();
+        rightIterator.reset();
     }
 
 
-    ArrayList<String> updateSchema(HashMap<String, Integer> newSchema,
-                                   int size, Table table, ArrayList<String> dataType) {
-
-        HashMap<String, Integer> tempSchema = Global.list_tables.get(table.getAlias());
-        dataType.addAll(Global.schema_store.get(table.getName()));
-        for (String col : tempSchema.keySet()) {
-            newSchema.put(col, tempSchema.get(col) + size);
+    ArrayList<String> create_new_schema(HashMap<String, Integer> newSchema, Table lefttable, Table righttable, ArrayList<String> dataType) {
+        LinkedHashMap<String, Integer> oldschema = Global.list_tables.get(lefttable.getAlias());
+        dataType.addAll(Global.schema_store.get(lefttable.getName()));
+        Set<String> ab = oldschema.keySet();
+        int sizes = 0;
+        for (String col : oldschema.keySet()) {
+            newSchema.put(col, oldschema.get(col) + sizes);
+        }
+        sizes = newSchema.size();
+        oldschema = Global.list_tables.get(righttable.getAlias());
+        dataType.addAll(Global.schema_store.get(righttable.getName()));
+        for (String col : oldschema.keySet()) {
+            newSchema.put(col, oldschema.get(col) + sizes);
         }
         return dataType;
     }
 
     @Override
     public Object[] next() {
-        Object[] temp2 = readOps.get(1).next();
+        Object[] temp2 = rightIterator.next();
         if (temp2 == null) {
-            temp1 = readOps.get(0).next();
+            temp1 = leftIterator.next();
             if (temp1 == null)
                 return null;
-            readOps.get(1).reset();
-            temp2 = readOps.get(1).next();
+            rightIterator.reset();
+            temp2 = rightIterator.next();
         }
         return createTuple(temp1, temp2);
-
     }
 
 

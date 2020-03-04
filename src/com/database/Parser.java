@@ -32,7 +32,12 @@ public class Parser {
                         try {
                             Statement stmt = parser.Statement();
                             if (stmt instanceof Select) {
-                                new SQLSelect((Select) stmt).getResult();
+                                try {
+                                    new SQLSelect((Select) stmt).getResult();
+                                } catch (Exception e) {
+                                    System.out.println("SQL syntax error"); //$NON-NLS-1$
+                                    e.printStackTrace();
+                                }
                                 System.out.println("=");
                             } else if (stmt instanceof CreateTable) {
                                 new SQLCreateTable((CreateTable) stmt).getResult();
@@ -41,6 +46,7 @@ public class Parser {
                             }
                         } catch (Exception e) {
                             System.out.println("SQL syntax error"); //$NON-NLS-1$
+                            e.printStackTrace();
                         }
                     }
                 }

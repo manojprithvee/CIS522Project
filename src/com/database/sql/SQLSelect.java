@@ -4,7 +4,6 @@ package com.database.sql;
 import com.database.Execute;
 import com.database.Global;
 import com.database.helpers.DB_Iterator;
-import com.database.helpers.DistinctIterator;
 import com.database.helpers.ScanIterator;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.schema.Table;
@@ -48,7 +47,7 @@ public class SQLSelect {
         i = 0;
         ArrayList<Table> joins = new ArrayList<>();
         ArrayList<String> tablenames = new ArrayList<>();
-        tablenames.add(body.getFromItem().getAlias());
+        tablenames.add(((Table) body.getFromItem()).getName());
         Expression expressionjoin = null;
         if (body.getJoins() != null) {
             for (Join join : body.getJoins()) {
@@ -60,6 +59,7 @@ public class SQLSelect {
                     if (tx.getAlias() == null) {
                         tx.setAlias(String.format("%d", i));
                     }
+                    tablenames.add(tx.getName());
                 }
                 managetablerenaming(tx);
                 joins.add(tx);
@@ -79,13 +79,9 @@ public class SQLSelect {
 
             createSchema(((PlainSelect) ((SubSelect) body.getFromItem()).getSelectBody()).getSelectItems(), t, ((PlainSelect) ((SubSelect) body.getFromItem()).getSelectBody()).getFromItem());
             op = getIterator((PlainSelect) ((SubSelect) body.getFromItem()).getSelectBody());
-            op = Execute.executeSelect(op,
-                    t,
-                    body.getWhere(),
-                    expressionjoin,
-                    body.getSelectItems(),
-                    joins,
-                    false
+            op = Execute.select_tree(op,
+                    body.getWhere(), expressionjoin, body.getSelectItems(), t,
+                    false, joins
             );
         } else {
             SQLSelect.managerenaming(body);
@@ -94,13 +90,9 @@ public class SQLSelect {
             allCol = ((body.getSelectItems().get(0) instanceof AllColumns));
             String tableFile = Global.table_location.toString() + File.separator + t.getName().toLowerCase() + ".dat";
             DB_Iterator readOp = new ScanIterator(new File(tableFile), t);
-            op = Execute.executeSelect(readOp,
-                    t,
-                    body.getWhere(),
-                    expressionjoin,
-                    body.getSelectItems(),
-                    joins,
-                    allCol
+            op = Execute.select_tree(readOp,
+                    body.getWhere(), expressionjoin, body.getSelectItems(), t,
+                    allCol, joins
             );
         }
         return op;
@@ -148,9 +140,8 @@ public class SQLSelect {
         } else if (body instanceof Union) {
             List<PlainSelect> plainSelects = ((Union) body).getPlainSelects();
             DB_Iterator current = getIterator(plainSelects.get(0));
-            current = new DistinctIterator(current);
             for (PlainSelect i : plainSelects.subList(1, plainSelects.size())) {
-                current = Execute.executeUnion(current, new DistinctIterator(getIterator(i)));
+                current = Execute.union_tree(current, getIterator(i));
             }
             Execute.print(current);
         }
