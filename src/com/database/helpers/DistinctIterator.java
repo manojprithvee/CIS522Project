@@ -6,13 +6,15 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 
-public class DistinctItrator implements ItratorImp {
+public class DistinctIterator implements DB_Iterator {
 
-    private final ItratorImp itrator;
-    private HashSet<List<Object>> buffer = new HashSet<>();
-    public DistinctItrator(ItratorImp itrator) {
-        this.itrator = itrator;
+    private final DB_Iterator DB_Iterator;
+    private final HashSet<List<Object>> buffer = new HashSet<>();
+
+    public DistinctIterator(DB_Iterator DB_Iterator) {
+        this.DB_Iterator = DB_Iterator;
     }
+
     @Override
     public void reset() {
 
@@ -20,7 +22,7 @@ public class DistinctItrator implements ItratorImp {
 
     @Override
     public Object[] next() {
-        Object[] nextRow = itrator.next();
+        Object[] nextRow = DB_Iterator.next();
         if (nextRow == null) {
             return null;
         }

@@ -18,13 +18,13 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 
-public class ScanItrator implements ItratorImp {
-    File file = null;
-    Iterator<CSVRecord> scan = null;
+public class ScanIterator implements DB_Iterator {
+    final Table table;
+    File file;
     BufferedReader br = null;
-    Table table;
+    Iterator scan = null;
 
-    public ScanItrator(File f, Table table) {
+    public ScanIterator(File f, Table table) {
         this.file = f;
         this.table = table;
         reset();
@@ -36,7 +36,7 @@ public class ScanItrator implements ItratorImp {
             br = new BufferedReader(new FileReader(file));
             scan = new CSVParser(br, CSVFormat.DEFAULT.withDelimiter('|')).iterator();
         } catch (IOException e) {
-            System.out.println("ScanOperator1");
+            System.out.println("error");
         }
     }
 
@@ -45,37 +45,37 @@ public class ScanItrator implements ItratorImp {
 
         if (!scan.hasNext())
             return null;
-        CSVRecord line = scan.next();
+        CSVRecord line = (CSVRecord) scan.next();
 
         if (line == null)
             return null;
-        Object[] tuple = new Object[line.size()];
-        ArrayList<String> dataType = Global.tableSchema.get(table.getName().toUpperCase());
+        Object[] row = new Object[line.size()];
+        ArrayList<String> dataType = Global.schema_store.get(table.getName().toUpperCase());
         for (int i = 0; i < line.size(); i++) {
             switch (dataType.get(i).toUpperCase()) {
                 case "INT":
-                    tuple[i] = new LongValue(line.get(i));
+                    row[i] = new LongValue(line.get(i));
                     break;
                 case "DECIMAL":
                 case "DOUBLE":
-                    tuple[i] = new DoubleValue(line.get(i));
+                    row[i] = new DoubleValue(line.get(i));
                     break;
                 case "DATE":
-                    tuple[i] = new DateValue(line.get(i));
+                    row[i] = new DateValue(line.get(i));
                     break;
                 case "CHAR":
                 case "STRING":
                 case "VARCHAR":
-                    tuple[i] = new StringValue(line.get(i));
+                    row[i] = new StringValue(line.get(i));
                     break;
                 default: {
                     if (dataType.get(i).contains("CHAR")) {
-                        tuple[i] = new StringValue(line.get(i));
+                        row[i] = new StringValue(line.get(i));
                     }
                 }
             }
         }
-        return tuple;
+        return row;
 
     }
 

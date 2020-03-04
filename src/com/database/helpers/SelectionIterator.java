@@ -10,13 +10,13 @@ import java.sql.SQLException;
 import java.util.HashMap;
 
 
-public class SelectionItrator implements ItratorImp {
+public class SelectionIterator implements DB_Iterator {
 
-    ItratorImp op;
-    HashMap<String, Integer> schema;
-    Expression condition;
+    final DB_Iterator op;
+    final HashMap<String, Integer> schema;
+    final Expression condition;
 
-    public SelectionItrator(ItratorImp input, HashMap<String, Integer> schema, Expression condition) {
+    public SelectionIterator(DB_Iterator input, HashMap<String, Integer> schema, Expression condition) {
 
         this.op = input;
         this.schema = schema;
@@ -31,19 +31,18 @@ public class SelectionItrator implements ItratorImp {
 
     @Override
     public Object[] next() {
-        Object[] tuple = op.next();
-        Evaluator eval = new Evaluator(schema, tuple);
-        while (tuple != null) {
+        Object[] row = op.next();
+        Evaluator eval = new Evaluator(schema, row);
+        while (row != null) {
             try {
                 if (((BooleanValue) eval.eval(condition)).getValue()) {
-                    return tuple;
+                    return row;
                 }
             } catch (SQLException e) {
-                e.printStackTrace();
-                System.out.println("Exception occured in SelectionOperator.readOneTuple()");
+                System.out.println("Error");
             }
-            tuple = op.next();
-            eval.setTuple(tuple);
+            row = op.next();
+            eval.setTuple(row);
         }
         return null;
     }

@@ -4,10 +4,8 @@ import com.database.helpers.*;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.Function;
 import net.sf.jsqlparser.expression.StringValue;
-import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.select.AllTableColumns;
-import net.sf.jsqlparser.statement.select.Limit;
 import net.sf.jsqlparser.statement.select.SelectExpressionItem;
 import net.sf.jsqlparser.statement.select.SelectItem;
 
@@ -17,48 +15,47 @@ import java.util.List;
 public class Execute {
 
 
-    public static ItratorImp executeSelect(ItratorImp op, Table table, Expression where, Expression condition, List<SelectItem> list, ArrayList<Table> joins, ArrayList<Column> groupByColumnReferences, Expression having, boolean allColumns, Limit limit) {
-        ArrayList<Function> functions = new ArrayList<>();
+    public static DB_Iterator executeSelect(DB_Iterator op, Table table, Expression where, Expression condition, List<SelectItem> list, ArrayList<Table> joins, boolean allColumns) {
+        ArrayList<Function> aggregator = new ArrayList<>();
         boolean isAggregate = false;
-        ItratorImp oper = op;
-        if (joins != null) {
-            for (int i = 0; i < joins.size(); i++) {
-                Table jointly = joins.get(i);
-                oper = new CrossProductItrator(oper, jointly, table);
+        DB_Iterator oper = op;
+        Global.column_used = new ArrayList<>();
+        if (joins != null && !joins.isEmpty()) {
+            for (Table jointly : joins) {
+                oper = new CrossProductIterator(oper, jointly, table);
                 table = oper.getTable();
             }
             table = oper.getTable();
         }
         if (where != null)
-            oper = new SelectionItrator(oper, Global.tables.get(table.getAlias()), where);
+            oper = new SelectionIterator(oper, Global.list_tables.get(table.getAlias()), where);
         if (condition != null)
-            oper = new SelectionItrator(oper, Global.tables.get(table.getAlias()), condition);
+            oper = new SelectionIterator(oper, Global.list_tables.get(table.getAlias()), condition);
         if (!allColumns) {
 
 
-            for (int i = 0; i < list.size(); i++) {
-                if (!(list.get(i) instanceof AllTableColumns)) {
-                    SelectExpressionItem selectitem = (SelectExpressionItem) list.get(i);
+            for (SelectItem selectItem : list) {
+                if (!(selectItem instanceof AllTableColumns)) {
+                    SelectExpressionItem selectitem = (SelectExpressionItem) selectItem;
                     if (selectitem.getExpression() instanceof Function) {
-                        functions.add((Function) selectitem.getExpression());
+                        aggregator.add((Function) selectitem.getExpression());
                         isAggregate = true;
                     }
                 }
             }
         }
         if (isAggregate)
-            oper = new AggregateItrator(oper, Global.tables.get(table.getAlias()), functions, table);
+            oper = new AggregateIterator(oper, aggregator, table);
         else
-            oper = new ProjectionItrator(oper, list, table, allColumns);
+            oper = new ProjectionIterator(oper, list, table, allColumns);
         return oper;
     }
 
 
-
-    public static void dump(ItratorImp input) {
+    public static void print(DB_Iterator input) {
         Object[] row = input.next();
         while (row != null) {
-            int i = 0;
+            int i;
             for (i = 0; i < row.length - 1; i++) {
                 if (row[i] instanceof StringValue)
                     System.out.print(((StringValue) row[i]).getNotExcapedValue() + "|");
@@ -74,9 +71,9 @@ public class Execute {
         }
     }
 
-    public static ItratorImp executeUnion(ItratorImp current, ItratorImp operator) {
-        ItratorImp output = new UnionItator(current, operator);
-        output = new DistinctItrator(output);
+    public static DB_Iterator executeUnion(DB_Iterator current, DB_Iterator operator) {
+        DB_Iterator output = new UnionIterator(current, operator);
+        output = new DistinctIterator(output);
         return output;
     }
 }

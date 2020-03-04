@@ -2,18 +2,20 @@ package com.database.helpers;
 
 import net.sf.jsqlparser.schema.Table;
 
-public class UnionItator implements ItratorImp {
-    ItratorImp left, right;
+public class UnionIterator implements DB_Iterator {
+    final DB_Iterator left;
+    final DB_Iterator right;
     boolean leftdone = false;
 
-    public UnionItator(ItratorImp left, ItratorImp right) {
+    public UnionIterator(DB_Iterator left, DB_Iterator right) {
         this.left = left;
         this.right = right;
     }
 
     @Override
     public void reset() {
-
+        left.reset();
+        right.reset();
     }
 
     @Override
@@ -25,8 +27,7 @@ public class UnionItator implements ItratorImp {
             lout = null;
         if (lout == null) {
             leftdone = true;
-            Object[] rout = right.next();
-            return rout;
+            return right.next();
         } else {
             return lout;
         }

@@ -10,25 +10,26 @@ import java.util.List;
 
 
 public class SQLCreateTable {
-    private CreateTable sql;
+    private final CreateTable sql;
 
     public SQLCreateTable(CreateTable stmt) {
         this.sql = stmt;
     }
 
-    public void getResult() throws Exception {
-        String tableName = sql.getTable().getName().toUpperCase();
-        LinkedHashMap<String, Integer> cols = new LinkedHashMap<String, Integer>();
-        ArrayList<String> dataType = new ArrayList<String>();
-        if (Global.tables != null && !Global.tables.containsKey(tableName)) {
-            List<ColumnDefinition> list = sql.getColumnDefinitions();
-            for (int i = 0; i < list.size(); i++) {
-                ColumnDefinition temp = list.get(i);
-                cols.put(tableName + "." + temp.getColumnName(), i);
-                dataType.add(temp.getColDataType().toString());
+    public void getResult() {
+        String tableName = sql.getTable().getName();
+        LinkedHashMap<String, Integer> cols = new LinkedHashMap<>();
+        ArrayList<String> dataType = new ArrayList<>();
+        if (!Global.list_tables.containsKey(tableName)) {
+            List<ColumnDefinition> lists = sql.getColumnDefinitions();
+            int i = 0;
+            for (ColumnDefinition list : lists) {
+                cols.put(tableName + "." + list.getColumnName(), i);
+                dataType.add(list.getColDataType().toString());
+                i++;
             }
-            Global.tables.put(tableName, cols);
-            Global.tableSchema.put(tableName, dataType);
+            Global.list_tables.put(tableName, cols);
+            Global.schema_store.put(tableName, dataType);
         }
 
     }

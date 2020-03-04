@@ -1,9 +1,9 @@
 package com.database.helpers;
 
-import net.sf.jsqlparser.schema.Table;
+        import net.sf.jsqlparser.schema.Table;
 
 
-public interface ItratorImp {
+public interface DB_Iterator {
 
     void reset();
 

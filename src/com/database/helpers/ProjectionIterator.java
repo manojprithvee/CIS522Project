@@ -15,22 +15,22 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-public class ProjectionItrator implements ItratorImp {
+public class ProjectionIterator implements DB_Iterator {
 
-    ItratorImp op;
-    Object[] tuple;
+    final DB_Iterator op;
+    final Table table;
     ArrayList<SelectItem> toProject;
-    Table table;
-    HashMap<String, Integer> schema;
-    boolean allColumns;
+    final HashMap<String, Integer> schema;
+    final boolean allColumns;
+    Object[] row;
 
-    public ProjectionItrator(ItratorImp op, List<SelectItem> p, Table table, boolean allColumns) {
+    public ProjectionIterator(DB_Iterator op, List<SelectItem> p, Table table, boolean allColumns) {
 
         this.op = op;
-        this.tuple = new Object[p.size()];
+        this.row = new Object[p.size()];
         this.toProject = (ArrayList<SelectItem>) p;
         this.table = table;
-        this.schema = Global.tables.get(table.getAlias());
+        this.schema = Global.list_tables.get(table.getAlias());
         this.allColumns = allColumns;
     }
 
@@ -57,7 +57,7 @@ public class ProjectionItrator implements ItratorImp {
             if (f instanceof AllTableColumns) {
                 AllTableColumns a = (AllTableColumns) f;
                 Table tab = a.getTable();
-                for (String j : Global.tables.get(tab.getName()).keySet()) {
+                for (String j : Global.list_tables.get(tab.getName()).keySet()) {
                     SelectExpressionItem expItem = new SelectExpressionItem();
                     j = j.substring(j.indexOf(".") + 1);
                     expItem.setAlias(j);
@@ -68,24 +68,23 @@ public class ProjectionItrator implements ItratorImp {
                 list.add(f);
             }
         }
-//        System.out.println(Arrays.deepToString(list.toArray()));
         toProject = list;
-        tuple = new Object[toProject.size()];
+        row = new Object[toProject.size()];
         for (SelectItem f : toProject) {
             try {
                 SelectExpressionItem e = (SelectExpressionItem) f;
                 if (e.getExpression() instanceof Function) {
                     Expression x = new Column(null, e.getExpression().toString());
-                    tuple[index] = eval.eval(x);
+                    row[index] = eval.eval(x);
                 } else {
-                    tuple[index] = eval.eval(e.getExpression());
+                    row[index] = eval.eval(e.getExpression());
                 }
             } catch (SQLException e1) {
-                System.out.println("Exception in ProjectOperator.readOneTuple()");
+                System.out.println("error in ProjectIterator");
             }
             index++;
         }
-        return tuple;
+        return row;
     }
 
 

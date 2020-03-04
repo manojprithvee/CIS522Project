@@ -12,21 +12,21 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.Scanner;
 
-public class main {
+public class Parser {
     public static void main(String[] args) {
         if (args.length > 1) {
             File file = new File(args[0]);
             String str;
-            FileInputStream fis = null;
             try {
-                fis = new FileInputStream(file);
+                Global.table_location = new File(args[1]);
+                FileInputStream fis = new FileInputStream(file);
                 byte[] data = new byte[(int) file.length()];
                 fis.read(data);
                 fis.close();
                 str = new String(data, StandardCharsets.UTF_8);
                 String[] arrOfStr = str.split(";");
                 for (String s : arrOfStr) {
-                    if (s.strip() != "") {
+                    if (!s.strip().equals("")) {
                         Reader input = new StringReader(s.toUpperCase());
                         CCJSqlParser parser = new CCJSqlParser(input);
                         try {
@@ -41,24 +41,19 @@ public class main {
                             }
                         } catch (Exception e) {
                             System.out.println("SQL syntax error"); //$NON-NLS-1$
-                            e.printStackTrace();
                         }
                     }
                 }
 
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            Global.dataDir = new File(args[1]);
+            Global.table_location = new File(args[1]);
 
         } else {
 
             Scanner sc = new Scanner(System.in);
             String s;
-
-            //TODO: convert GET DATA FROM QUERY.TXT
             while (!(s = sc.nextLine()).isEmpty()) {
                 Reader input = new StringReader(s.toUpperCase());
                 CCJSqlParser parser = new CCJSqlParser(input);
