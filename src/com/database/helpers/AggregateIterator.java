@@ -35,8 +35,7 @@ public class AggregateIterator implements DB_Iterator {
                 return null;
             else {
                 int count;
-                count = 0;
-                count++;
+                count = 1;
                 row = oper.next();
                 while (row != null) {
                     count++;
