@@ -1,6 +1,6 @@
 package com.database.helpers;
 
-import com.database.Global;
+import com.database.Shared_Variables;
 import com.database.sql.Evaluator;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.Function;
@@ -16,7 +16,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
-public class ProjectionIterator implements DB_Iterator {
+public class Projection_Iterator implements DB_Iterator {
 
     final DB_Iterator op;
     final Table table;
@@ -25,13 +25,13 @@ public class ProjectionIterator implements DB_Iterator {
     final boolean allColumns;
     Object[] row;
 
-    public ProjectionIterator(DB_Iterator op, List<SelectItem> p, Table table, boolean allColumns) {
+    public Projection_Iterator(DB_Iterator op, List<SelectItem> p, Table table, boolean allColumns) {
 
         this.op = op;
         this.row = new Object[p.size()];
         this.to_keep = (ArrayList<SelectItem>) p;
         this.table = table;
-        this.schema = Global.list_tables.get(table.getAlias());
+        this.schema = Shared_Variables.list_tables.get(table.getAlias());
         this.allColumns = allColumns;
     }
 
@@ -57,7 +57,7 @@ public class ProjectionIterator implements DB_Iterator {
             if (f instanceof AllTableColumns) {
                 AllTableColumns a = (AllTableColumns) f;
                 Table tab = a.getTable();
-                for (Iterator<String> iterator = Global.list_tables.get(tab.getName()).keySet().iterator(); iterator.hasNext(); ) {
+                for (Iterator<String> iterator = Shared_Variables.list_tables.get(tab.getName()).keySet().iterator(); iterator.hasNext(); ) {
                     String j;
                     j = iterator.next();
                     SelectExpressionItem expItem;

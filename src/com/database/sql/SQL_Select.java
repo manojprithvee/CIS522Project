@@ -2,9 +2,9 @@ package com.database.sql;
 
 
 import com.database.Execute;
-import com.database.Global;
+import com.database.Shared_Variables;
 import com.database.helpers.DB_Iterator;
-import com.database.helpers.ScanIterator;
+import com.database.helpers.Scan_Iterator;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.select.*;
@@ -16,18 +16,18 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 
-public class SQLSelect {
+public class SQL_Select {
     private final Select sql;
 
-    public SQLSelect(Select stmt) {
+    public SQL_Select(Select stmt) {
         this.sql = stmt;
     }
 
-    public static void managerenaming(SelectBody body) {
+    public static void manage_renaming(SelectBody body) {
 
 
         ArrayList<SelectItem> selectItems = (ArrayList<SelectItem>) ((PlainSelect) body).getSelectItems();
-        Global.rename = new HashMap<>();
+        Shared_Variables.rename = new HashMap<>();
         for (SelectItem a : selectItems) {
             if ((a instanceof AllTableColumns) || (a instanceof AllColumns))
                 return;
@@ -36,7 +36,7 @@ public class SQLSelect {
             if (alias == null) {
                 s.setAlias(s.getExpression().toString());
             }
-            Global.rename.put(s.getAlias(), s.getExpression());
+            Shared_Variables.rename.put(s.getAlias(), s.getExpression());
         }
     }
 
@@ -85,12 +85,12 @@ public class SQLSelect {
                     false, joins
             );
         } else {
-            SQLSelect.managerenaming(body);
+            SQL_Select.manage_renaming(body);
             t = (Table) body.getFromItem();
             managetablerenaming(t);
             allCol = ((body.getSelectItems().get(0) instanceof AllColumns));
-            String tableFile = Global.table_location.toString() + File.separator + t.getName().toLowerCase() + ".dat";
-            DB_Iterator readOp = new ScanIterator(new File(tableFile), t);
+            String tableFile = Shared_Variables.table_location.toString() + File.separator + t.getName().toLowerCase() + ".dat";
+            DB_Iterator readOp = new Scan_Iterator(new File(tableFile), t);
             op = Execute.select_tree(readOp,
                     body.getWhere(), expressionjoin, body.getSelectItems(), t,
                     allCol, joins
@@ -104,14 +104,14 @@ public class SQLSelect {
             t.setAlias(t.getName());
         }
 
-        if (!Global.list_tables.containsKey(t.getAlias())) {
-            LinkedHashMap<String, Integer> tempSchema = Global.list_tables.get(t.getName());
+        if (!Shared_Variables.list_tables.containsKey(t.getAlias())) {
+            LinkedHashMap<String, Integer> tempSchema = Shared_Variables.list_tables.get(t.getName());
             LinkedHashMap<String, Integer> newSchema = new LinkedHashMap<>();
             for (String key : tempSchema.keySet()) {
                 String[] temp = key.split("\\.");
                 newSchema.put(t.getAlias() + "." + temp[1], tempSchema.get(key));
             }
-            Global.list_tables.put(t.getAlias(), newSchema);
+            Shared_Variables.list_tables.put(t.getAlias(), newSchema);
         }
     }
 
@@ -119,7 +119,7 @@ public class SQLSelect {
         LinkedHashMap<String, Integer> schema = new LinkedHashMap<>();
         if ((selectItems.get(0) instanceof AllColumns) || (selectItems.get(0) instanceof AllTableColumns)) {
             Table table = (Table) fromItem;
-            schema = (Global.list_tables.get(table.getName()));
+            schema = (Shared_Variables.list_tables.get(table.getName()));
         } else {
             for (int i = 0; i < selectItems.size(); i++) {
                 SelectExpressionItem abc = (SelectExpressionItem) selectItems.get(i);
@@ -130,7 +130,7 @@ public class SQLSelect {
                 }
             }
         }
-        Global.list_tables.put(t.getAlias(), schema);
+        Shared_Variables.list_tables.put(t.getAlias(), schema);
     }
 
     public void getResult() throws SQLException {

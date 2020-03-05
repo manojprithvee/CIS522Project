@@ -20,7 +20,7 @@ public class Execute {
     public static DB_Iterator select_tree(DB_Iterator op, Expression where, Expression condition, List<SelectItem> list, Table table, boolean allColumns, ArrayList<Table> joins) throws SQLException {
         boolean ifagg = false;
         DB_Iterator oper = op;
-        Global.column_used = new ArrayList<>();
+        Shared_Variables.column_used = new ArrayList<>();
         var aggregator = new ArrayList<Function>();
         if (!allColumns) {
             for (Iterator<SelectItem> iterator = list.iterator(); iterator.hasNext(); ) {
@@ -36,19 +36,19 @@ public class Execute {
         }
         if (joins != null && !joins.isEmpty()) {
             for (Table jointly : joins) {
-                oper = new CrossProductIterator(oper, jointly, table);
+                oper = new Cross_Product_Iterator(oper, jointly, table);
                 table = oper.getTable();
             }
             table = oper.getTable();
         }
         if (where != null)
-            oper = new SelectionIterator(oper, where, Global.list_tables.get(table.getAlias()));
+            oper = new Selection_Iterator(oper, where, Shared_Variables.list_tables.get(table.getAlias()));
         if (condition != null)
-            oper = new SelectionIterator(oper, condition, Global.list_tables.get(table.getAlias()));
+            oper = new Selection_Iterator(oper, condition, Shared_Variables.list_tables.get(table.getAlias()));
         if (ifagg)
-            oper = new AggregateIterator(oper, aggregator, table);
+            oper = new Aggregate_Iterator(oper, aggregator, table);
         else
-            oper = new ProjectionIterator(oper, list, table, allColumns);
+            oper = new Projection_Iterator(oper, list, table, allColumns);
         return oper;
     }
 
@@ -77,8 +77,8 @@ public class Execute {
     }
 
     public static DB_Iterator union_tree(DB_Iterator current, DB_Iterator operator) {
-        DB_Iterator output = new UnionIterator(current, operator);
-        output = new DistinctIterator(output);
+        DB_Iterator output = new Union_Iterator(current, operator);
+        output = new Distinct_Iterator(output);
         return output;
     }
 }

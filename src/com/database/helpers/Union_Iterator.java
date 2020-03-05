@@ -4,12 +4,12 @@ import net.sf.jsqlparser.schema.Table;
 
 import java.sql.SQLException;
 
-public class UnionIterator implements DB_Iterator {
+public class Union_Iterator implements DB_Iterator {
     final DB_Iterator left;
     final DB_Iterator right;
     boolean left_done = false;
 
-    public UnionIterator(DB_Iterator left, DB_Iterator right) {
+    public Union_Iterator(DB_Iterator left, DB_Iterator right) {
         this.left = left;
         this.right = right;
     }

@@ -1,6 +1,6 @@
 package com.database.helpers;
 
-import com.database.Global;
+import com.database.Shared_Variables;
 import net.sf.jsqlparser.expression.DateValue;
 import net.sf.jsqlparser.expression.DoubleValue;
 import net.sf.jsqlparser.expression.LongValue;
@@ -19,7 +19,7 @@ import java.util.Iterator;
 import java.util.List;
 
 
-public class ScanIterator implements DB_Iterator {
+public class Scan_Iterator implements DB_Iterator {
     final Table table;
     private final boolean full;
     File file;
@@ -27,14 +27,14 @@ public class ScanIterator implements DB_Iterator {
     Iterator scan = null;
     private List<CSVRecord> data;
 
-    public ScanIterator(File f, Table table) {
+    public Scan_Iterator(File f, Table table) {
         this.file = f;
         this.table = table;
         this.full = false;
         reset();
     }
 
-    public ScanIterator(File f, Table table, boolean full) {
+    public Scan_Iterator(File f, Table table, boolean full) {
         this.file = f;
         this.table = table;
         this.full = full;
@@ -69,7 +69,7 @@ public class ScanIterator implements DB_Iterator {
         Object[] row;
         ArrayList<String> dataType;
         row = new Object[line.size()];
-        dataType = Global.schema_store.get(table.getName().toUpperCase());
+        dataType = Shared_Variables.schema_store.get(table.getName().toUpperCase());
         int i = 0;
         while (i < line.size()) {
             if ("INT".equals(dataType.get(i).toUpperCase())) {

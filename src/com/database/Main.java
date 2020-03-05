@@ -1,7 +1,7 @@
 package com.database;
 
-import com.database.sql.SQLCreateTable;
-import com.database.sql.SQLSelect;
+import com.database.sql.SQL_Create_Table;
+import com.database.sql.SQL_Select;
 import net.sf.jsqlparser.parser.CCJSqlParser;
 import net.sf.jsqlparser.parser.ParseException;
 import net.sf.jsqlparser.statement.Statement;
@@ -18,7 +18,7 @@ public class Main {
             File file = new File(args[0]);
             String str;
             try {
-                Global.table_location = new File(args[1]);
+                Shared_Variables.table_location = new File(args[1]);
                 FileInputStream fis = new FileInputStream(file);
                 byte[] data = new byte[(int) file.length()];
                 int read = fis.read(data);
@@ -33,14 +33,14 @@ public class Main {
                             Statement stmt = parser.Statement();
                             if (stmt instanceof Select) {
                                 try {
-                                    new SQLSelect((Select) stmt).getResult();
+                                    new SQL_Select((Select) stmt).getResult();
                                 } catch (Exception e) {
                                     System.out.println("SQL syntax error"); //$NON-NLS-1$
                                     e.printStackTrace();
                                 }
                                 System.out.println("=");
                             } else if (stmt instanceof CreateTable) {
-                                new SQLCreateTable((CreateTable) stmt).getResult();
+                                new SQL_Create_Table((CreateTable) stmt).getResult();
                             } else {
                                 throw new ParseException("Only SELECT and CREATE TABLE statement is valid"); //$NON-NLS-1$
                             }
@@ -54,7 +54,7 @@ public class Main {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            Global.table_location = new File(args[1]);
+            Shared_Variables.table_location = new File(args[1]);
 
         } else {
 
@@ -67,10 +67,10 @@ public class Main {
                 try {
                     Statement stmt = parser.Statement();
                     if (stmt instanceof Select) {
-                        new SQLSelect((Select) stmt).getResult();
+                        new SQL_Select((Select) stmt).getResult();
                         System.out.println("=");
                     } else if (stmt instanceof CreateTable) {
-                        new SQLCreateTable((CreateTable) stmt).getResult();
+                        new SQL_Create_Table((CreateTable) stmt).getResult();
                     } else {
                         throw new ParseException("Only SELECT and CREATE TABLE statement is valid"); //$NON-NLS-1$
                     }
