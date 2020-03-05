@@ -1,5 +1,6 @@
-package com.database;
+package com.database.sql;
 
+import com.database.Global;
 import net.sf.jsqlparser.eval.Eval;
 import net.sf.jsqlparser.expression.PrimitiveValue;
 import net.sf.jsqlparser.schema.Column;
