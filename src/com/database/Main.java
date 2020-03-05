@@ -12,7 +12,7 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.Scanner;
 
-public class Parser {
+public class Main {
     public static void main(String[] args) {
         if (args.length > 1) {
             File file = new File(args[0]);
