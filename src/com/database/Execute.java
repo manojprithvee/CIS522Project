@@ -5,9 +5,7 @@ import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.Function;
 import net.sf.jsqlparser.expression.StringValue;
 import net.sf.jsqlparser.schema.Table;
-import net.sf.jsqlparser.statement.select.AllTableColumns;
-import net.sf.jsqlparser.statement.select.SelectExpressionItem;
-import net.sf.jsqlparser.statement.select.SelectItem;
+import net.sf.jsqlparser.statement.select.*;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -17,7 +15,7 @@ import java.util.List;
 public class Execute {
 
 
-    public static DB_Iterator select_tree(DB_Iterator op, Expression where, Expression condition, List<SelectItem> list, Table table, boolean allColumns, ArrayList<Table> joins) throws SQLException {
+    public static DB_Iterator select_tree(DB_Iterator op, Expression where, Expression condition, List<SelectItem> list, Table table, boolean allColumns, ArrayList<Table> joins, List<OrderByElement> orderByElements, Limit limit) throws SQLException {
         boolean ifagg = false;
         DB_Iterator oper = op;
         Shared_Variables.column_used = new ArrayList<>();
@@ -45,10 +43,15 @@ public class Execute {
             oper = new Selection_Iterator(oper, where, Shared_Variables.list_tables.get(table.getAlias()));
         if (condition != null)
             oper = new Selection_Iterator(oper, condition, Shared_Variables.list_tables.get(table.getAlias()));
+
         if (ifagg)
             oper = new Aggregate_Iterator(oper, aggregator, table);
         else
             oper = new Projection_Iterator(oper, list, table, allColumns);
+        if (orderByElements != null)
+            oper = new Order_By_Iterator(oper, orderByElements, table);
+        if (limit != null)
+            oper = new Limit_Iterator(oper, limit);
         return oper;
     }
 
