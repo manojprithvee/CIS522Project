@@ -82,7 +82,7 @@ public class SQL_Select {
             op = getIterator((PlainSelect) ((SubSelect) body.getFromItem()).getSelectBody());
             op = Execute.select_tree(op,
                     body.getWhere(), expressionjoin, body.getSelectItems(), t,
-                    false, joins, body.getOrderByElements(), body.getLimit()
+                    false, joins, body.getOrderByElements(), body.getLimit(), body.getGroupByColumnReferences(), body.getHaving()
             );
         } else {
             SQL_Select.manage_renaming(body);
@@ -93,7 +93,7 @@ public class SQL_Select {
             DB_Iterator readOp = new Scan_Iterator(new File(tableFile), t);
             op = Execute.select_tree(readOp,
                     body.getWhere(), expressionjoin, body.getSelectItems(), t,
-                    allCol, joins, body.getOrderByElements(), body.getLimit()
+                    allCol, joins, body.getOrderByElements(), body.getLimit(), body.getGroupByColumnReferences(), body.getHaving()
             );
         }
         return op;

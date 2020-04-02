@@ -4,6 +4,7 @@ import com.database.helpers.*;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.Function;
 import net.sf.jsqlparser.expression.StringValue;
+import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.select.*;
 
@@ -15,9 +16,8 @@ import java.util.List;
 public class Execute {
 
 
-    public static DB_Iterator select_tree(DB_Iterator op, Expression where, Expression condition, List<SelectItem> list, Table table, boolean allColumns, ArrayList<Table> joins, List<OrderByElement> orderByElements, Limit limit) throws SQLException {
+    public static DB_Iterator select_tree(DB_Iterator op, Expression where, Expression condition, List<SelectItem> list, Table table, boolean allColumns, ArrayList<Table> joins, List<OrderByElement> orderByElements, Limit limit, List<Column> groupByColumnReferences, Expression having) throws SQLException {
         boolean ifagg = false;
-        DB_Iterator oper = op;
         Shared_Variables.column_used = new ArrayList<>();
         var aggregator = new ArrayList<Function>();
         if (!allColumns) {
@@ -34,30 +34,34 @@ public class Execute {
         }
         if (joins != null && !joins.isEmpty()) {
             for (Table jointly : joins) {
-                oper = new Cross_Product_Iterator(oper, jointly, table);
-                table = oper.getTable();
+                op = new Cross_Product_Iterator(op, jointly, table);
+                table = op.getTable();
             }
-            table = oper.getTable();
+            table = op.getTable();
         }
         if (where != null)
-            oper = new Selection_Iterator(oper, where, Shared_Variables.list_tables.get(table.getAlias()));
+            op = new Selection_Iterator(op, where, Shared_Variables.list_tables.get(table.getAlias()));
         if (condition != null)
-            oper = new Selection_Iterator(oper, condition, Shared_Variables.list_tables.get(table.getAlias()));
+            op = new Selection_Iterator(op, condition, Shared_Variables.list_tables.get(table.getAlias()));
 
-        if (ifagg)
-            oper = new Aggregate_Iterator(oper, aggregator, table);
+        if (groupByColumnReferences != null) {
+            op = new Group_By_Iterator(op, table, list, aggregator, groupByColumnReferences, having);
+//            op = new Projection_Iterator(op, list, table, allColumns);
+        } else if (ifagg)
+            op = new Aggregate_Iterator(op, aggregator, table);
         else
-            oper = new Projection_Iterator(oper, list, table, allColumns);
+            op = new Projection_Iterator(op, list, table, allColumns);
         if (orderByElements != null)
-            oper = new Order_By_Iterator(oper, orderByElements, table);
+            op = new Order_By_Iterator(op, orderByElements, table);
         if (limit != null)
-            oper = new Limit_Iterator(oper, limit);
-        return oper;
+            op = new Limit_Iterator(op, limit);
+        return op;
     }
 
 
     public static void print(DB_Iterator input) throws SQLException {
         Object[] row = input.next();
+//        var count =0;
         if (row != null) {
             do {
                 int i;
@@ -75,6 +79,8 @@ public class Execute {
                     System.out.print(row[i]);
                 System.out.println();
                 row = input.next();
+//                count++;
+//                if(count>10) break;
             } while (row != null);
         }
     }
