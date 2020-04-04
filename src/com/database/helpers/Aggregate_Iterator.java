@@ -1,7 +1,9 @@
 package com.database.helpers;
 
+import com.database.Shared_Variables;
+import com.database.aggregators.Aggregator;
 import net.sf.jsqlparser.expression.Function;
-import net.sf.jsqlparser.expression.LongValue;
+import net.sf.jsqlparser.expression.PrimitiveValue;
 import net.sf.jsqlparser.schema.Table;
 
 import java.sql.SQLException;
@@ -11,6 +13,7 @@ public class Aggregate_Iterator implements DB_Iterator {
     final DB_Iterator oper;
     final ArrayList<Function> aggregator;
     final Table table;
+    boolean output = true;
 
     public Aggregate_Iterator(DB_Iterator oper, ArrayList<Function> aggregator, Table table) {
         this.oper = oper;
@@ -25,37 +28,28 @@ public class Aggregate_Iterator implements DB_Iterator {
 
     @Override
     public Object[] next() throws SQLException {
-        Object[] result = null;
-        boolean finished = false;
-        Object[] obj = new Object[0];
-        obj = new Object[aggregator.size()];
-        int i = 0;
-        while (true) {
-            if (i >= aggregator.size()) break;
-            Object total;
-            Object[] row = oper.next();
-            if (row != null) {
-                int count;
-                count = 1;
-                row = oper.next();
-                if (row != null) {
-                    do {
-                        count++;
-                        row = oper.next();
-                    } while (row != null);
+
+        Object[] result = new Object[aggregator.size()];
+        int count = 0;
+        for (Function function : aggregator) {
+            if (function instanceof Function) {
+                Aggregator abc = Aggregator.get_agg(function, Shared_Variables.current_schema);
+                PrimitiveValue output = null;
+                Object[] tuple = oper.next();
+                while (tuple != null) {
+                    output = abc.get_results(tuple);
+                    tuple = oper.next();
                 }
-                total = new LongValue(Integer.toString(count));
-            } else {
-                finished = true;
-                break;
+                result[count] = output;
+                count++;
+                oper.reset();
             }
-            obj[i] = total;
-            i++;
         }
-        if (!finished) {
-            result = obj;
-        }
-        return result;
+        if (output) {
+            output = false;
+            return result;
+        } else
+            return null;
     }
 
     @Override

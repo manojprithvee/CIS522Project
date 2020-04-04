@@ -7,6 +7,7 @@ import net.sf.jsqlparser.schema.Column;
 
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 
 
 public class Evaluator extends Eval {
@@ -17,6 +18,10 @@ public class Evaluator extends Eval {
     public Evaluator(HashMap<String, Integer> table, Object[] row) {
         this.structure = table;
         this.row = row;
+    }
+
+    public Evaluator(LinkedHashMap<String, Integer> schema) {
+        this.structure = schema;
     }
 
     public void setTuple(Object[] row) {

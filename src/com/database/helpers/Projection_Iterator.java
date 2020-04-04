@@ -20,9 +20,9 @@ public class Projection_Iterator implements DB_Iterator {
 
     final DB_Iterator op;
     final Table table;
-    ArrayList<SelectItem> to_keep;
     final HashMap<String, Integer> schema;
     final boolean allColumns;
+    ArrayList<SelectItem> to_keep;
     Object[] row;
 
     public Projection_Iterator(DB_Iterator op, List<SelectItem> p, Table table, boolean allColumns) {
@@ -31,7 +31,7 @@ public class Projection_Iterator implements DB_Iterator {
         this.row = new Object[p.size()];
         this.to_keep = (ArrayList<SelectItem>) p;
         this.table = table;
-        this.schema = Shared_Variables.list_tables.get(table.getAlias());
+        this.schema = Shared_Variables.current_schema;
         this.allColumns = allColumns;
     }
 
@@ -46,7 +46,6 @@ public class Projection_Iterator implements DB_Iterator {
 
         Object[] temp = op.next();
         Evaluator eval = new Evaluator(schema, temp);
-
         int index = 0;
         if (temp == null) return null;
         if (allColumns) return temp;
@@ -57,7 +56,7 @@ public class Projection_Iterator implements DB_Iterator {
             if (f instanceof AllTableColumns) {
                 AllTableColumns a = (AllTableColumns) f;
                 Table tab = a.getTable();
-                for (Iterator<String> iterator = Shared_Variables.list_tables.get(tab.getName()).keySet().iterator(); iterator.hasNext(); ) {
+                for (Iterator<String> iterator = Shared_Variables.current_schema.keySet().iterator(); iterator.hasNext(); ) {
                     String j;
                     j = iterator.next();
                     SelectExpressionItem expItem;
@@ -82,8 +81,10 @@ public class Projection_Iterator implements DB_Iterator {
                     Expression x;
                     x = new Column(null, e.getExpression().toString());
                     row[index] = eval.eval(x);
-                } else row[index] = eval.eval(e.getExpression());
+                } else
+                    row[index] = eval.eval(e.getExpression());
             } catch (SQLException e1) {
+                e1.printStackTrace();
                 System.out.println("error in ProjectIterator");
             }
             index++;

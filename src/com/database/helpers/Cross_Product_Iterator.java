@@ -11,14 +11,13 @@ import java.util.LinkedHashMap;
 
 public class Cross_Product_Iterator implements DB_Iterator {
 
-    DB_Iterator leftIterator, rightIterator;
     final Table table;
     private final int size;
+    DB_Iterator leftIterator, rightIterator;
     private Object[] temp1;
 
     public Cross_Product_Iterator(DB_Iterator oper, Table righttable,
                                   Table lefttable) throws SQLException {
-
         leftIterator = oper;
         String dataFileName = righttable.getName() + ".dat";
         dataFileName = Shared_Variables.table_location.toString() + File.separator + dataFileName.toLowerCase();
@@ -40,12 +39,18 @@ public class Cross_Product_Iterator implements DB_Iterator {
         Shared_Variables.schema_store.put(newTableName, dataType);
         temp1 = leftIterator.next();
         size = newSchema.size();
+        Shared_Variables.current_schema = (LinkedHashMap<String, Integer>) newSchema.clone();
     }
 
     @Override
     public void reset() {
         leftIterator.reset();
         rightIterator.reset();
+        try {
+            temp1 = leftIterator.next();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
 
@@ -70,8 +75,11 @@ public class Cross_Product_Iterator implements DB_Iterator {
         Object[] temp2 = rightIterator.next();
         if (temp2 == null) {
             temp1 = leftIterator.next();
-            if (temp1 == null)
+
+            if (temp1 == null) {
+
                 return null;
+            }
             rightIterator.reset();
             temp2 = rightIterator.next();
         }
@@ -82,6 +90,7 @@ public class Cross_Product_Iterator implements DB_Iterator {
     public Object[] create_row(Object[] left, Object[] right) {
         Object[] new_row = new Object[size];
         int index = 0;
+        if (left == null || right == null) return null;
         for (Object o : left) {
             new_row[index] = o;
             index++;

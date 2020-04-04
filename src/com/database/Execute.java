@@ -39,14 +39,19 @@ public class Execute {
             }
             table = op.getTable();
         }
-        if (where != null)
-            op = new Selection_Iterator(op, where, Shared_Variables.list_tables.get(table.getAlias()));
-        if (condition != null)
-            op = new Selection_Iterator(op, condition, Shared_Variables.list_tables.get(table.getAlias()));
+//        System.out.println("lkshfbv");
 
+
+        if (where != null)
+            op = new Selection_Iterator(op, where, Shared_Variables.current_schema);
+
+        if (condition != null)
+            op = new Selection_Iterator(op, condition, Shared_Variables.current_schema);
         if (groupByColumnReferences != null) {
-            op = new Group_By_Iterator(op, table, list, aggregator, groupByColumnReferences, having);
+            op = new Group_By_Iterator(op, table, list, groupByColumnReferences, having);
+
 //            op = new Projection_Iterator(op, list, table, allColumns);
+
         } else if (ifagg)
             op = new Aggregate_Iterator(op, aggregator, table);
         else

@@ -48,7 +48,6 @@ public class SQL_Select {
         i = 0;
         ArrayList<Table> joins = new ArrayList<>();
         ArrayList<String> tablenames = new ArrayList<>();
-        tablenames.add(((Table) body.getFromItem()).getName());
         Expression expressionjoin = null;
         if (body.getJoins() != null) {
             for (Join join : body.getJoins()) {
@@ -77,7 +76,6 @@ public class SQL_Select {
                 t.setName(body.getFromItem().getAlias());
                 t.setAlias(body.getFromItem().getAlias());
             }
-
             createSchema(((PlainSelect) ((SubSelect) body.getFromItem()).getSelectBody()).getSelectItems(), t, ((PlainSelect) ((SubSelect) body.getFromItem()).getSelectBody()).getFromItem());
             op = getIterator((PlainSelect) ((SubSelect) body.getFromItem()).getSelectBody());
             op = Execute.select_tree(op,
@@ -85,6 +83,7 @@ public class SQL_Select {
                     false, joins, body.getOrderByElements(), body.getLimit(), body.getGroupByColumnReferences(), body.getHaving()
             );
         } else {
+            tablenames.add(((Table) body.getFromItem()).getName());
             SQL_Select.manage_renaming(body);
             t = (Table) body.getFromItem();
             managetablerenaming(t);
@@ -111,6 +110,7 @@ public class SQL_Select {
                 String[] temp = key.split("\\.");
                 newSchema.put(t.getAlias() + "." + temp[1], tempSchema.get(key));
             }
+            Shared_Variables.current_schema = newSchema;
             Shared_Variables.list_tables.put(t.getAlias(), newSchema);
         }
     }
@@ -130,6 +130,7 @@ public class SQL_Select {
                 }
             }
         }
+        Shared_Variables.current_schema = schema;
         Shared_Variables.list_tables.put(t.getAlias(), schema);
     }
 

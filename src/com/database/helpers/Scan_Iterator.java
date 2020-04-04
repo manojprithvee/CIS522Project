@@ -32,6 +32,7 @@ public class Scan_Iterator implements DB_Iterator {
         this.table = table;
         this.full = false;
         reset();
+        Shared_Variables.current_schema = Shared_Variables.list_tables.get(table.getName().toUpperCase());
     }
 
     public Scan_Iterator(File f, Table table, boolean full) {
@@ -39,6 +40,7 @@ public class Scan_Iterator implements DB_Iterator {
         this.table = table;
         this.full = full;
         reset();
+        Shared_Variables.current_schema = Shared_Variables.list_tables.get(table.getName().toUpperCase());
     }
 
     @Override
@@ -50,6 +52,7 @@ public class Scan_Iterator implements DB_Iterator {
                 if (data == null) data = parser.getRecords();
                 scan = data.iterator();
             } else {
+                parser = new CSVParser(br, CSVFormat.DEFAULT.withDelimiter('|'));
                 scan = parser.iterator();
             }
         } catch (IOException e) {
