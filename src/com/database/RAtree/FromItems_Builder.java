@@ -39,7 +39,6 @@ public class FromItems_Builder implements FromItemVisitor {
                 schema.put(subSelect.getAlias() + "." + i, count);
                 count += 1;
             }
-            System.out.println(schema);
         }
         current = Build_Tree.getRoot();
     }

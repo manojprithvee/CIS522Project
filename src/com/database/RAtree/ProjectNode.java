@@ -48,7 +48,6 @@ public class ProjectNode extends RA_Tree {
             if (expression instanceof Function) isagg = true;
             String alias = item.getAlias();
             if (expression instanceof Column && alias == null) {
-                System.out.println(expression);
                 if (((Column) expression).getTable() == null) {
                     new_schema.put(table.getName() + "." + ((Column) expression).getColumnName(), count);
                 } else {
