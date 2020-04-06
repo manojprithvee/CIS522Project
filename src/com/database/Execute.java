@@ -18,7 +18,6 @@ public class Execute {
 
     public static DB_Iterator select_tree(DB_Iterator op, Expression where, Expression condition, List<SelectItem> list, Table table, boolean allColumns, ArrayList<Table> joins, List<OrderByElement> orderByElements, Limit limit, List<Column> groupByColumnReferences, Expression having) throws SQLException {
         boolean ifagg = false;
-        Shared_Variables.column_used = new ArrayList<>();
         var aggregator = new ArrayList<Function>();
         if (!allColumns) {
             for (Iterator<SelectItem> iterator = list.iterator(); iterator.hasNext(); ) {

@@ -15,11 +15,15 @@ public class Count extends Aggregator {
         super(expression, schema);
     }
 
-    public PrimitiveValue get_results(Object[] row) throws SQLException {
+    public PrimitiveValue get_results(Object[] row) {
         if (row != null) {
             evaluator.setTuple(row);
             if (count == null) return new LongValue(1);
-            count = evaluator.eval(new Addition(count, new LongValue(1)));
+            try {
+                count = evaluator.eval(new Addition(count, new LongValue(1)));
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
             return count;
         }
         return new LongValue(0);

@@ -2,8 +2,6 @@ package com.database.helpers;
 
 import net.sf.jsqlparser.schema.Table;
 
-import java.sql.SQLException;
-
 public class Union_Iterator implements DB_Iterator {
     final DB_Iterator left;
     final DB_Iterator right;
@@ -21,7 +19,7 @@ public class Union_Iterator implements DB_Iterator {
     }
 
     @Override
-    public Object[] next() throws SQLException {
+    public Object[] next() {
         Object[] lout;
         if (!left_done)
             lout = left.next();

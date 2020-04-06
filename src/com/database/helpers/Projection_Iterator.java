@@ -42,7 +42,7 @@ public class Projection_Iterator implements DB_Iterator {
     }
 
     @Override
-    public Object[] next() throws SQLException {
+    public Object[] next() {
 
         Object[] temp = op.next();
         Evaluator eval = new Evaluator(schema, temp);

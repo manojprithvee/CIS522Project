@@ -3,8 +3,6 @@ package com.database.helpers;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.select.Limit;
 
-import java.sql.SQLException;
-
 public class Limit_Iterator implements DB_Iterator {
     DB_Iterator op;
     Long limit;
@@ -21,7 +19,7 @@ public class Limit_Iterator implements DB_Iterator {
     }
 
     @Override
-    public Object[] next() throws SQLException {
+    public Object[] next() {
         Object[] row = op.next();
         while (row != null && count < limit) {
             count += 1;

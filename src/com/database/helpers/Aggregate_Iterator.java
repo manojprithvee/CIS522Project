@@ -6,7 +6,6 @@ import net.sf.jsqlparser.expression.Function;
 import net.sf.jsqlparser.expression.PrimitiveValue;
 import net.sf.jsqlparser.schema.Table;
 
-import java.sql.SQLException;
 import java.util.ArrayList;
 
 public class Aggregate_Iterator implements DB_Iterator {
@@ -27,7 +26,7 @@ public class Aggregate_Iterator implements DB_Iterator {
     }
 
     @Override
-    public Object[] next() throws SQLException {
+    public Object[] next() {
 
         Object[] result = new Object[aggregator.size()];
         int count = 0;

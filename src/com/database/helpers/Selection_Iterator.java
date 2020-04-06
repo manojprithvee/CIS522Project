@@ -30,14 +30,18 @@ public class Selection_Iterator implements DB_Iterator {
     }
 
     @Override
-    public Object[] next() throws SQLException {
+    public Object[] next() {
         Object[] row;
         row = op.next();
         Evaluator eval;
         eval = new Evaluator(schema, row);
         while (true) {
             if (row == null) break;
-            if (((BooleanValue) eval.eval(condition)).getValue()) return row;
+            try {
+                if (((BooleanValue) eval.eval(condition)).getValue()) return row;
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
             row = op.next();
             eval.setTuple(row);
         }

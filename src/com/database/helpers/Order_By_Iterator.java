@@ -4,7 +4,6 @@ import com.database.sql.Row_Compare;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.select.OrderByElement;
 
-import java.sql.SQLException;
 import java.util.*;
 
 public class Order_By_Iterator implements DB_Iterator {
@@ -25,15 +24,13 @@ public class Order_By_Iterator implements DB_Iterator {
     public void reset() {
         buffer = new ArrayList<Object[]>();
         op.reset();
-        try {
+
             Object[] row = op.next();
             while (row != null) {
                 buffer.add(row);
                 row = op.next();
             }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+
         Comparator<Object[]> main_compare = null;
         for (OrderByElement orderbyElement : orderByElements) {
             if (main_compare == null) {
@@ -46,7 +43,7 @@ public class Order_By_Iterator implements DB_Iterator {
     }
 
     @Override
-    public Object[] next() throws SQLException {
+    public Object[] next() {
         if (ite.hasNext())
             return ite.next();
         else

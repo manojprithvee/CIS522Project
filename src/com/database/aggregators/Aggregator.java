@@ -5,10 +5,9 @@ import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.Function;
 import net.sf.jsqlparser.expression.PrimitiveValue;
 
-import java.sql.SQLException;
 import java.util.LinkedHashMap;
 
-public class Aggregator {
+public abstract class Aggregator {
 
     protected final Expression expression;
     protected Evaluator evaluator;
@@ -38,7 +37,5 @@ public class Aggregator {
         return null;
     }
 
-    public PrimitiveValue get_results(Object[] row) throws SQLException {
-        return null;
-    }
+    public abstract PrimitiveValue get_results(Object[] row);
 }

@@ -17,39 +17,36 @@ import java.util.stream.Collectors;
 
 public class Group_By_Iterator implements DB_Iterator {
 
-    private final Expression having;
     private final DB_Iterator oper;
     private final Table table;
-    private final List<SelectItem> list;
     private final List<Column> groupByColumnReferences;
     private final ArrayList<Object[]> buffer;
     private final ArrayList<Integer> indexes;
     private final Map<List<Object>, List<Object[]>> bufferHash;
     private final Iterator<List<Object>> bufferHashitrator;
     private final LinkedHashMap<String, Integer> newschema;
-    private LinkedHashMap<String, Integer> finalschema;
-    private boolean currentschemaset = true;
+    private final List<SelectItem> list;
 
-    public Group_By_Iterator(DB_Iterator oper, Table table, List<SelectItem> list, List<Column> groupByColumnReferences, Expression having) {
+    {
+    }
+
+    public Group_By_Iterator
+
+    public Group_By_Iterator(DB_Iterator oper, ArrayList<Expression> list, List<Column> groupByColumnReferences) {
 
         this.oper = oper;
         this.table = table;
         this.list = list;
         this.groupByColumnReferences = groupByColumnReferences;
-        this.having = having;
         buffer = new ArrayList<Object[]>();
 //        schema = Shared_Variables.list_tables.get(table.getAlias());
 
-        try {
-            Object[] row = oper.next();
-            while (row != null) {
+        Object[] row = oper.next();
+        while (row != null) {
                 buffer.add(row);
                 row = oper.next();
             }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        System.out.println(Shared_Variables.current_schema);
+
         this.indexes = new ArrayList<Integer>();
         newschema = new LinkedHashMap<>();
         int count = 0;
@@ -78,42 +75,42 @@ public class Group_By_Iterator implements DB_Iterator {
             indexes.add(index);
         }
 
-        finalschema = new LinkedHashMap<>();
-        count = 0;
-        for (SelectItem f : list) {
-            if (((SelectExpressionItem) f).getExpression() instanceof Function) {
-                Function function = (Function) ((SelectExpressionItem) f).getExpression();
-                if (((SelectExpressionItem) f).getAlias() != null) {
-                    finalschema.put(table.getName() + "." + ((SelectExpressionItem) f).getAlias(), count);
-                } else {
-                    finalschema.put(table.getName() + "." + function.getName(), count);
-                }
-            } else {
-                Column main_column = (Column) ((SelectExpressionItem) f).getExpression();
-                int id = 0;
-                HashMap<Integer, String> names;
-                String finalcolumn = "";
-                if (!Shared_Variables.rename.containsKey(main_column.getColumnName())) {
-                    names = columnchange(id, main_column.getColumnName());
-                    finalcolumn = (String) names.values().toArray()[0];
-                    id = (int) names.keySet().toArray()[0];
-                } else if (newschema.containsKey(main_column.getColumnName())) {
-                    finalcolumn = main_column.getColumnName();
-                    id = newschema.get(main_column.getColumnName());
-                } else if (newschema.containsKey(Shared_Variables.rename.get(main_column.getColumnName()).toString())) {
-                    finalcolumn = Shared_Variables.rename.get(main_column.getColumnName()).toString();
-                    id = newschema.get(Shared_Variables.rename.get(main_column.getColumnName()).toString());
-                } else {
-                    names = columnchange(id, main_column.getColumnName());
-                    finalcolumn = (String) names.values().toArray()[0];
-                    id = (int) names.keySet().toArray()[0];
-                }
-                finalschema.put(finalcolumn, count);
-            }
-            count++;
-        }
+//        finalschema = new LinkedHashMap<>();
+//        count = 0;
+//        for (SelectItem f : list) {
+//            if (((SelectExpressionItem) f).getExpression() instanceof Function) {
+//                Function function = (Function) ((SelectExpressionItem) f).getExpression();
+//                if (((SelectExpressionItem) f).getAlias() != null) {
+//                    finalschema.put(table.getName() + "." + ((SelectExpressionItem) f).getAlias(), count);
+//                } else {
+//                    finalschema.put(table.getName() + "." + function.getName(), count);
+//                }
+//            } else {
+//                Column main_column = (Column) ((SelectExpressionItem) f).getExpression();
+//                int id = 0;
+//                HashMap<Integer, String> names;
+//                String finalcolumn = "";
+//                if (!Shared_Variables.rename.containsKey(main_column.getColumnName())) {
+//                    names = columnchange(id, main_column.getColumnName());
+//                    finalcolumn = (String) names.values().toArray()[0];
+//                    id = (int) names.keySet().toArray()[0];
+//                } else if (newschema.containsKey(main_column.getColumnName())) {
+//                    finalcolumn = main_column.getColumnName();
+//                    id = newschema.get(main_column.getColumnName());
+//                } else if (newschema.containsKey(Shared_Variables.rename.get(main_column.getColumnName()).toString())) {
+//                    finalcolumn = Shared_Variables.rename.get(main_column.getColumnName()).toString();
+//                    id = newschema.get(Shared_Variables.rename.get(main_column.getColumnName()).toString());
+//                } else {
+//                    names = columnchange(id, main_column.getColumnName());
+//                    finalcolumn = (String) names.values().toArray()[0];
+//                    id = (int) names.keySet().toArray()[0];
+//                }
+//                finalschema.put(finalcolumn, count);
+//            }
+//            count++;
+//        }
 
-        Shared_Variables.current_schema = finalschema;
+//        Shared_Variables.current_schema = finalschema;
 
         bufferHash = this.buffer.stream().collect(Collectors.groupingBy(w -> grouping(w)));
         ArrayList<Double> function_results = new ArrayList<>();
@@ -134,7 +131,7 @@ public class Group_By_Iterator implements DB_Iterator {
     }
 
     @Override
-    public Object[] next() throws SQLException {
+    public Object[] next() {
         List<Object> group;
 
         if (bufferHashitrator.hasNext()) {
@@ -142,7 +139,7 @@ public class Group_By_Iterator implements DB_Iterator {
             Object[] result = new Object[list.size()];
             int count = 0;
 
-            for (SelectItem f : list) {
+            for (Expression f : inExpressions) {
                 if (((SelectExpressionItem) f).getExpression() instanceof Function) {
                     Function function = (Function) ((SelectExpressionItem) f).getExpression();
                     Aggregator abc = Aggregator.get_agg(function, Shared_Variables.current_schema);
@@ -153,32 +150,19 @@ public class Group_By_Iterator implements DB_Iterator {
                     result[count] = output;
                 } else {
                     Evaluator eval = new Evaluator(newschema, group.toArray());
-                    result[count] = eval.eval(((SelectExpressionItem) f).getExpression());
+                    try {
+                        result[count] = eval.eval(((SelectExpressionItem) f).getExpression());
+                    } catch (SQLException e) {
+                        e.printStackTrace();
+                    }
                 }
                 count++;
-            }
-            if (currentschemaset) {
-                Shared_Variables.current_schema = finalschema;
-                currentschemaset = false;
             }
             return result;
         } else
             return null;
     }
 
-    public HashMap<Integer, String> columnchange(int id, String columnName) {
-        String finalname = "";
-        for (Iterator<String> iterator = newschema.keySet().iterator(); iterator.hasNext(); ) {
-            String column = iterator.next();
-            String x = column.substring(column.indexOf(".") + 1);
-            if (x.equals(columnName))
-                finalname = column;
-            id = newschema.get(column);
-        }
-        var abc = new HashMap<Integer, String>();
-        abc.put(id, finalname);
-        return abc;
-    }
 
     @Override
     public Table getTable() {
