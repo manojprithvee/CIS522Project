@@ -11,13 +11,13 @@ public class OrderByNode extends RA_Tree {
     private final List<OrderByElement> orderByElements;
     private final Table table;
 
-    public OrderByNode(RA_Tree o, List<OrderByElement> orderByElements, Table t) {
-        super(o);
+    public OrderByNode(List<OrderByElement> orderByElements, Table t) {
+        super();
         this.orderByElements = orderByElements;
         table = t;
     }
 
     public DB_Iterator get_iterator() {
-        return new Order_By_Iterator(left.get_iterator(), orderByElements, table);
+        return new Order_By_Iterator(left.get_iterator(), orderByElements);
     }
 }

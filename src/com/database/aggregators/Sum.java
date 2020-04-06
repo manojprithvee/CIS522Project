@@ -5,6 +5,7 @@ import net.sf.jsqlparser.expression.LongValue;
 import net.sf.jsqlparser.expression.PrimitiveValue;
 import net.sf.jsqlparser.expression.operators.arithmetic.Addition;
 
+import java.sql.SQLException;
 import java.util.LinkedHashMap;
 
 public class Sum extends Aggregator {
@@ -19,10 +20,18 @@ public class Sum extends Aggregator {
             evaluator.setTuple(row);
 
             if (output == null) {
-                output = evaluator.eval(expression);
-                return evaluator.eval(expression);
+                try {
+                    output = evaluator.eval(expression);
+                    return evaluator.eval(expression);
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
             }
-            output = evaluator.eval(new Addition(output, evaluator.eval(expression)));
+            try {
+                output = evaluator.eval(new Addition(output, evaluator.eval(expression)));
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
 
             return output;
         }

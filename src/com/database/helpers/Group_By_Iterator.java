@@ -3,7 +3,6 @@ package com.database.helpers;
 import com.database.Shared_Variables;
 import com.database.aggregators.Aggregator;
 import com.database.sql.Evaluator;
-import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.Function;
 import net.sf.jsqlparser.expression.PrimitiveValue;
 import net.sf.jsqlparser.schema.Column;
@@ -18,7 +17,6 @@ import java.util.stream.Collectors;
 public class Group_By_Iterator implements DB_Iterator {
 
     private final DB_Iterator oper;
-    private final Table table;
     private final List<Column> groupByColumnReferences;
     private final ArrayList<Object[]> buffer;
     private final ArrayList<Integer> indexes;
@@ -26,26 +24,24 @@ public class Group_By_Iterator implements DB_Iterator {
     private final Iterator<List<Object>> bufferHashitrator;
     private final LinkedHashMap<String, Integer> newschema;
     private final List<SelectItem> list;
+    private final LinkedHashMap<String, Integer> lastschema;
 
-    {
-    }
 
-    public Group_By_Iterator
-
-    public Group_By_Iterator(DB_Iterator oper, ArrayList<Expression> list, List<Column> groupByColumnReferences) {
+    public Group_By_Iterator(DB_Iterator oper, List<SelectItem> list, List<Column> groupByColumnReferences, LinkedHashMap<String, Integer> new_schema) {
 
         this.oper = oper;
-        this.table = table;
         this.list = list;
+        this.lastschema = Shared_Variables.current_schema;
+        Shared_Variables.current_schema = new_schema;
         this.groupByColumnReferences = groupByColumnReferences;
         buffer = new ArrayList<Object[]>();
 //        schema = Shared_Variables.list_tables.get(table.getAlias());
 
         Object[] row = oper.next();
         while (row != null) {
-                buffer.add(row);
-                row = oper.next();
-            }
+            buffer.add(row);
+            row = oper.next();
+        }
 
         this.indexes = new ArrayList<Integer>();
         newschema = new LinkedHashMap<>();
@@ -55,18 +51,15 @@ public class Group_By_Iterator implements DB_Iterator {
         for (Column column : groupByColumnReferences) {
             int index = 0;
             String column_name = "";
-            if (Shared_Variables.current_schema.get(column.getWholeColumnName()) != null) {
+            if (lastschema.get(column.getWholeColumnName()) != null) {
                 column_name = column.getWholeColumnName();
-                index = Shared_Variables.current_schema.get(column.getWholeColumnName());
-            } else if (Shared_Variables.current_schema.get(table.getAlias() + "." + column.getWholeColumnName()) != null) {
-                column_name = table.getAlias() + "." + column.getWholeColumnName();
-                index = Shared_Variables.current_schema.get(table.getAlias() + "." + column.getWholeColumnName());
+                index = lastschema.get(column.getWholeColumnName());
             } else {
-                for (var columnname : Shared_Variables.current_schema.keySet()) {
+                for (var columnname : lastschema.keySet()) {
                     String x = columnname.substring(columnname.indexOf(".") + 1);
                     if (x.equals(column.getColumnName())) {
                         column_name = columnname;
-                        index = Shared_Variables.current_schema.get(columnname);
+                        index = lastschema.get(columnname);
                     }
                 }
             }
@@ -139,7 +132,7 @@ public class Group_By_Iterator implements DB_Iterator {
             Object[] result = new Object[list.size()];
             int count = 0;
 
-            for (Expression f : inExpressions) {
+            for (SelectItem f : list) {
                 if (((SelectExpressionItem) f).getExpression() instanceof Function) {
                     Function function = (Function) ((SelectExpressionItem) f).getExpression();
                     Aggregator abc = Aggregator.get_agg(function, Shared_Variables.current_schema);

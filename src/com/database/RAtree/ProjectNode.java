@@ -1,10 +1,16 @@
 package com.database.RAtree;
 
 import com.database.Shared_Variables;
+import com.database.helpers.Aggregate_Iterator;
+import com.database.helpers.DB_Iterator;
 import com.database.helpers.Group_By_Iterator;
+import com.database.helpers.Projection_Iterator;
 import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.expression.Function;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
+import net.sf.jsqlparser.statement.select.AllColumns;
+import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.SelectExpressionItem;
 import net.sf.jsqlparser.statement.select.SelectItem;
 
@@ -14,14 +20,20 @@ import java.util.List;
 
 public class ProjectNode extends RA_Tree {
     private final ArrayList<Expression> inExpressions = new ArrayList<>();
+    private final PlainSelect body;
+    private final Table table;
     boolean isagg = false;
     boolean isattribule = false;
-    LinkedHashMap<String, Integer> new_schema = new LinkedHashMap<>();
 
-    public ProjectNode(RA_Tree o, List<SelectItem> selectItems, Table t,) {
-        super(o);
+    LinkedHashMap<String, Integer> new_schema = new LinkedHashMap<>();
+    private boolean allColumns = false;
+
+    public ProjectNode(PlainSelect plainSelect, Table t) {
+        this.body = plainSelect;
+        this.table = t;
         ArrayList<SelectExpressionItem> items = new ArrayList<>();
-        for (SelectItem item : selectItems) {
+        allColumns = ((plainSelect.getSelectItems().get(0) instanceof AllColumns));
+        for (SelectItem item : plainSelect.getSelectItems()) {
             items.addAll(new Select_Item_Builder(t, item).getitems());
         }
 
@@ -36,27 +48,36 @@ public class ProjectNode extends RA_Tree {
             if (expression instanceof Function) isagg = true;
             String alias = item.getAlias();
             if (expression instanceof Column && alias == null) {
-                new_schema.put(table.getName() + "." + ((Column) expression).getColumnName(), count);
-
+                System.out.println(expression);
+                if (((Column) expression).getTable() == null) {
+                    new_schema.put(table.getName() + "." + ((Column) expression).getColumnName(), count);
+                } else {
+                    new_schema.put(((Column) expression).getWholeColumnName(), count);
+                }
             } else {
                 if (alias == null) alias = expression.toString();
                 new_schema.put(table.getName() + "." + alias, count);
             }
+            count++;
         }
+
+
     }
 
-
     @Override
-    public Group_By_Iterator get_iterator() {
+    public DB_Iterator get_iterator() {
+
         if (allColumns) return this.getLeft().get_iterator();
         List<SelectItem> inSchema = null;
         if (isattribule && isagg) {
-            return new Group_By_Iterator(left.get_iterator(), inExpressions, inSchema);
+            return new Group_By_Iterator(left.get_iterator(), body.getSelectItems(), body.getGroupByColumnReferences(), new_schema);
         } else if (!isattribule && isagg) {
-            return new AggregateIterator((RowIterator) left.iterator(), inExpressions, inSchema);
+            return new Aggregate_Iterator(left.get_iterator(), inExpressions, new_schema);
         } else {
-            return new NonAggregateIterator((RowIterator) left.iterator(), inExpressions, inSchema);
+            return new Projection_Iterator(
+                    left.get_iterator(),
+                    body.getSelectItems(),
+                    allColumns, new_schema);
         }
-        return null;
     }
 }

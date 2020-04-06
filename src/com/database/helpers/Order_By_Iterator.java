@@ -13,9 +13,8 @@ public class Order_By_Iterator implements DB_Iterator {
     DB_Iterator op;
     private Iterator<Object[]> ite;
 
-    public Order_By_Iterator(DB_Iterator op, List<OrderByElement> orderByElements, Table table) {
+    public Order_By_Iterator(DB_Iterator op, List<OrderByElement> orderByElements) {
         this.orderByElements = orderByElements;
-        this.table = table;
         this.op = op;
         reset();
     }

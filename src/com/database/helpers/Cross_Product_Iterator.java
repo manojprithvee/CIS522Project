@@ -43,7 +43,9 @@ public class Cross_Product_Iterator implements DB_Iterator {
     private void main(Table lefttable, Table righttable) {
         LinkedHashMap<String, Integer> newSchema = new LinkedHashMap<>();
         ArrayList<String> dataType = new ArrayList<>();
-        String newTableName = lefttable.getAlias() + "," + righttable.getAlias();
+        String newTableName = lefttable.getAlias() +
+                "," +
+                righttable.getAlias();
         this.table = new Table(newTableName, newTableName);
         this.table.setAlias(newTableName);
         dataType = create_new_schema(newSchema, lefttable, righttable, dataType);
@@ -71,6 +73,7 @@ public class Cross_Product_Iterator implements DB_Iterator {
         }
         sizes = newSchema.size();
         oldschema = Shared_Variables.list_tables.get(righttable.getAlias());
+//        System.out.println(oldschema);
         dataType.addAll(Shared_Variables.schema_store.get(righttable.getName()));
         for (String col : oldschema.keySet()) {
             newSchema.put(col, oldschema.get(col) + sizes);

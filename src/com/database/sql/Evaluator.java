@@ -5,6 +5,7 @@ import net.sf.jsqlparser.eval.Eval;
 import net.sf.jsqlparser.expression.PrimitiveValue;
 import net.sf.jsqlparser.schema.Column;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -42,7 +43,13 @@ public class Evaluator extends Eval {
         else if (structure.containsKey(Shared_Variables.rename.get(main_column.getColumnName()).toString()))
             id = structure.get(Shared_Variables.rename.get(main_column.getColumnName()).toString());
         else id = columnchange(id, main_column.getColumnName());
-        return (PrimitiveValue) row[id];
+        try {
+            return (PrimitiveValue) row[id];
+        } catch (Exception e) {
+            System.out.println(structure);
+            System.out.println(Arrays.deepToString(row));
+            throw e;
+        }
     }
 
     public int columnchange(int id, String columnName) {

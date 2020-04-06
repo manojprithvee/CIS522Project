@@ -6,12 +6,16 @@ import net.sf.jsqlparser.statement.select.FromItemVisitor;
 import net.sf.jsqlparser.statement.select.SubJoin;
 import net.sf.jsqlparser.statement.select.SubSelect;
 
+import java.util.LinkedHashMap;
+
 public class FromItems_Builder implements FromItemVisitor {
     FromItem fromItem;
     RA_Tree current;
+    private LinkedHashMap<String, Integer> schema;
 
     public FromItems_Builder(FromItem fromItems) {
         this.fromItem = fromItems;
+
         fromItems.accept(this);
     }
 
@@ -19,16 +23,32 @@ public class FromItems_Builder implements FromItemVisitor {
         return current;
     }
 
-    @Override
-    public void visit(Table table) {
-        current = new TableNode(null, table);
+    public LinkedHashMap<String, Integer> getSchema() {
+        return schema;
     }
 
     @Override
     public void visit(SubSelect subSelect) {
+
         Build_Tree Build_Tree = new Build_Tree(subSelect.getSelectBody());
+
+        if (subSelect.getAlias() != null) {
+            schema = new LinkedHashMap<>();
+            var count = 0;
+            for (var i : Build_Tree.getSchema().keySet()) {
+                schema.put(subSelect.getAlias() + "." + i, count);
+                count += 1;
+            }
+            System.out.println(schema);
+        }
         current = Build_Tree.getRoot();
     }
+
+    @Override
+    public void visit(Table table) {
+        current = new TableNode(table);
+    }
+
 
     @Override
     public void visit(SubJoin subJoin) {

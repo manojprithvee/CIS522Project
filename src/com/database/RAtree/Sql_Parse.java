@@ -1,6 +1,8 @@
 package com.database.RAtree;
 
 import com.database.Shared_Variables;
+import com.database.helpers.DB_Iterator;
+import net.sf.jsqlparser.expression.StringValue;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.StatementVisitor;
 import net.sf.jsqlparser.statement.create.table.ColumnDefinition;
@@ -73,9 +75,36 @@ public class Sql_Parse implements StatementVisitor {
         }
     }
 
+    public static void print(DB_Iterator input) {
+        Object[] row = input.next();
+        if (row != null) {
+            do {
+                int i;
+                i = 0;
+                while (i < row.length - 1) {
+                    if (row[i] instanceof StringValue) {
+                        System.out.print(((StringValue) row[i]).getNotExcapedValue() + "|");
+                    } else
+                        System.out.print(row[i] + "|");
+                    i++;
+                }
+                if (row[i] instanceof StringValue) {
+                    System.out.print(((StringValue) row[i]).getNotExcapedValue());
+                } else
+                    System.out.print(row[i]);
+                System.out.println();
+                row = input.next();
+            } while (row != null);
+        }
+    }
+
     @Override
     public void visit(Select select) {
-        Build_Tree treeBuilder = new Build_Tree(select.getSelectBody());
+        if (select.getSelectBody() instanceof PlainSelect) {
+            Build_Tree treeBuilder = new Build_Tree(select.getSelectBody());
+            RA_Tree root = treeBuilder.getRoot();
+            print(root.get_iterator());
+        }
     }
 
     @Override

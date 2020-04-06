@@ -13,6 +13,7 @@ public class Distinct_Iterator implements DB_Iterator {
 
     public Distinct_Iterator(DB_Iterator DB_Iterator) {
         this.DB_Iterator = DB_Iterator;
+
     }
 
     @Override
@@ -24,6 +25,7 @@ public class Distinct_Iterator implements DB_Iterator {
     public Object[] next() {
         Object[] row;
         row = DB_Iterator.next();
+
         while (true) {
             if (row == null) break;
             if (!buffer.contains(Arrays.asList(row))) {
