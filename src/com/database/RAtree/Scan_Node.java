@@ -7,10 +7,10 @@ import net.sf.jsqlparser.schema.Table;
 
 import java.io.File;
 
-public class TableNode extends RA_Tree {
+public class Scan_Node extends RA_Tree {
     private final Table table;
 
-    public TableNode(Table table) {
+    public Scan_Node(Table table) {
         super();
         this.table = table;
     }

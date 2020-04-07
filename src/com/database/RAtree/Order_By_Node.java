@@ -7,11 +7,11 @@ import net.sf.jsqlparser.statement.select.OrderByElement;
 
 import java.util.List;
 
-public class OrderByNode extends RA_Tree {
+public class Order_By_Node extends RA_Tree {
     private final List<OrderByElement> orderByElements;
     private final Table table;
 
-    public OrderByNode(List<OrderByElement> orderByElements, Table t) {
+    public Order_By_Node(List<OrderByElement> orderByElements, Table t) {
         super();
         this.orderByElements = orderByElements;
         table = t;

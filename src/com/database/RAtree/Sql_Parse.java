@@ -100,11 +100,10 @@ public class Sql_Parse implements StatementVisitor {
 
     @Override
     public void visit(Select select) {
-        if (select.getSelectBody() instanceof PlainSelect) {
+            System.out.println(select);
             Build_Tree treeBuilder = new Build_Tree(select.getSelectBody());
             RA_Tree root = treeBuilder.getRoot();
             print(root.get_iterator());
-        }
     }
 
     @Override

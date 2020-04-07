@@ -3,8 +3,8 @@ package com.database.RAtree;
 import com.database.helpers.DB_Iterator;
 import com.database.helpers.Distinct_Iterator;
 
-public class DistinctNode extends RA_Tree {
-    public DistinctNode() {
+public class Distinct_Node extends RA_Tree {
+    public Distinct_Node() {
         super();
     }
 

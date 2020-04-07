@@ -18,7 +18,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 
-public class ProjectNode extends RA_Tree {
+public class Project_Node extends RA_Tree {
     private final ArrayList<Expression> inExpressions = new ArrayList<>();
     private final PlainSelect body;
     private final Table table;
@@ -28,7 +28,7 @@ public class ProjectNode extends RA_Tree {
     LinkedHashMap<String, Integer> new_schema = new LinkedHashMap<>();
     private boolean allColumns = false;
 
-    public ProjectNode(PlainSelect plainSelect, Table t) {
+    public Project_Node(PlainSelect plainSelect, Table t) {
         this.body = plainSelect;
         this.table = t;
         ArrayList<SelectExpressionItem> items = new ArrayList<>();

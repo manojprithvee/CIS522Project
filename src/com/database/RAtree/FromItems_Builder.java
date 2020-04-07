@@ -45,7 +45,7 @@ public class FromItems_Builder implements FromItemVisitor {
 
     @Override
     public void visit(Table table) {
-        current = new TableNode(table);
+        current = new Scan_Node(table);
     }
 
 

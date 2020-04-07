@@ -37,35 +37,35 @@ public class Build_Tree implements SelectVisitor {
         RA_Tree output = build_from_joins(plainSelect.getFromItem(), plainSelect.getJoins());
 
         if (plainSelect.getWhere() != null) {
-            RA_Tree selectTree = new SelectNode(plainSelect.getWhere());
+            RA_Tree selectTree = new Select_Node(plainSelect.getWhere());
             selectTree.setLeft(output);
             output = selectTree;
         }
-        RA_Tree projectTree = new ProjectNode(plainSelect, t);
+        RA_Tree projectTree = new Project_Node(plainSelect, t);
         projectTree.setLeft(output);
         output = projectTree;
 
         if (plainSelect.getHaving() != null) {
-            RA_Tree selectTree = new SelectNode(plainSelect.getHaving());
+            RA_Tree selectTree = new Select_Node(plainSelect.getHaving());
             selectTree.setLeft(output);
             output = selectTree;
         }
 
         if (plainSelect.getOrderByElements() != null) {
             List<OrderByElement> orderByElements = plainSelect.getOrderByElements();
-            RA_Tree orderByTree = new OrderByNode(orderByElements, t);
+            RA_Tree orderByTree = new Order_By_Node(orderByElements, t);
             orderByTree.setLeft(output);
             output = orderByTree;
         }
 
         if (plainSelect.getDistinct() != null) {
-            RA_Tree distinctTree = new DistinctNode();
+            RA_Tree distinctTree = new Distinct_Node();
             distinctTree.setLeft(output);
             output = distinctTree;
         }
 
         if (plainSelect.getLimit() != null) {
-            RA_Tree limitTree = new LimitNode(plainSelect.getLimit());
+            RA_Tree limitTree = new Limit_Node(plainSelect.getLimit());
             limitTree.setLeft(output);
             output = limitTree;
         }
@@ -81,7 +81,15 @@ public class Build_Tree implements SelectVisitor {
 
     @Override
     public void visit(Union union) {
-
+        RA_Tree output = null;
+        for (PlainSelect plainselect : union.getPlainSelects()) {
+            if (output == null) {
+                output = new Build_Tree(plainselect).getRoot();
+            } else {
+                output = new Union_Node(output, new Build_Tree(plainselect).getRoot());
+            }
+        }
+        root = output;
     }
 
     public RA_Tree build_from_joins(FromItem fromItem, List<Join> joins) {
@@ -124,10 +132,12 @@ public class Build_Tree implements SelectVisitor {
                     Shared_Variables.table += 1;
                 }
             }
-            output = new CartesianNode(left, right, t, table);
+            output = new Cross_Product_Node(left, right, t, table);
             table = output.get_iterator().getTable();
             if (expression != null) {
-                output = new SelectNode(expression);
+                RA_Tree select_node = new Select_Node(expression);
+                select_node.setLeft(output);
+                output = select_node;
             }
         }
 
