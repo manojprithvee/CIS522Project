@@ -86,8 +86,6 @@ public class Optimize {
                 list.addAll(getcolumnused((BinaryExpression) expression.getRightExpression()));
             }
         }
-
-
         return list;
     }
 

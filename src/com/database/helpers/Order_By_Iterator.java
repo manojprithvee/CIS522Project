@@ -24,11 +24,11 @@ public class Order_By_Iterator implements DB_Iterator {
         buffer = new ArrayList<Object[]>();
         op.reset();
 
-            Object[] row = op.next();
-            while (row != null) {
-                buffer.add(row);
-                row = op.next();
-            }
+        Object[] row = op.next();
+        while (row != null) {
+            buffer.add(row);
+            row = op.next();
+        }
 
         Comparator<Object[]> main_compare = null;
         for (OrderByElement orderbyElement : orderByElements) {

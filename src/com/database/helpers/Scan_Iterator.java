@@ -25,8 +25,8 @@ public class Scan_Iterator implements DB_Iterator {
     File file;
     BufferedReader br = null;
     Iterator scan = null;
-    private List<CSVRecord> data;
     LinkedHashMap<String, Integer> schema;
+    private List<CSVRecord> data;
 
     public Scan_Iterator(File f, Table table, boolean full) {
         this.file = f;

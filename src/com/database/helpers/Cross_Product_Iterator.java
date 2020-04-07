@@ -11,9 +11,9 @@ import java.util.LinkedHashMap;
 public class Cross_Product_Iterator implements DB_Iterator {
 
     Table table;
+    DB_Iterator leftIterator, rightIterator;
     private int size;
     private Table righttable, lefttable;
-    DB_Iterator leftIterator, rightIterator;
     private Object[] temp1;
 
     public Cross_Product_Iterator(DB_Iterator leftIterator, DB_Iterator rightIterator, Table righttable,

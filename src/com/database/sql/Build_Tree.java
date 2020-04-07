@@ -28,10 +28,6 @@ public class Build_Tree implements SelectVisitor {
 
     }
 
-    public LinkedHashMap<String, Integer> getSchema() {
-        return schema;
-    }
-
     public static void manage_renaming(SelectBody body) {
 
 
@@ -47,6 +43,10 @@ public class Build_Tree implements SelectVisitor {
             }
             Shared_Variables.rename.put(s.getAlias(), s.getExpression());
         }
+    }
+
+    public LinkedHashMap<String, Integer> getSchema() {
+        return schema;
     }
 
     public RA_Tree getRoot() {
