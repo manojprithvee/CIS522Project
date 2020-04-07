@@ -15,15 +15,23 @@ public class Sum extends Aggregator {
         super(expression, schema);
     }
 
-    public PrimitiveValue get_results(Object[] row) throws SQLException {
+    public PrimitiveValue get_results(Object[] row) {
         if (row != null) {
             evaluator.setTuple(row);
 
             if (output == null) {
-                output = evaluator.eval(expression);
-                return evaluator.eval(expression);
+                try {
+                    output = evaluator.eval(expression);
+                    return evaluator.eval(expression);
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
             }
-            output = evaluator.eval(new Addition(output, evaluator.eval(expression)));
+            try {
+                output = evaluator.eval(new Addition(output, evaluator.eval(expression)));
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
 
             return output;
         }

@@ -1,6 +1,7 @@
 package com.database.helpers;
 
 
+import com.database.Shared_Variables;
 import com.database.sql.Evaluator;
 import net.sf.jsqlparser.expression.BooleanValue;
 import net.sf.jsqlparser.expression.Expression;
@@ -16,10 +17,10 @@ public class Selection_Iterator implements DB_Iterator {
     final HashMap<String, Integer> schema;
     final Expression condition;
 
-    public Selection_Iterator(DB_Iterator input, Expression condition, HashMap<String, Integer> schema) {
+    public Selection_Iterator(DB_Iterator input, Expression condition) {
 
         this.op = input;
-        this.schema = schema;
+        this.schema = Shared_Variables.current_schema;
         this.condition = condition;
 
     }
@@ -30,14 +31,19 @@ public class Selection_Iterator implements DB_Iterator {
     }
 
     @Override
-    public Object[] next() throws SQLException {
+    public Object[] next() {
         Object[] row;
         row = op.next();
         Evaluator eval;
         eval = new Evaluator(schema, row);
         while (true) {
             if (row == null) break;
-            if (((BooleanValue) eval.eval(condition)).getValue()) return row;
+            try {
+                if (((BooleanValue) eval.eval(condition)).getValue()) return row;
+            } catch (SQLException e) {
+                e.
+                        printStackTrace();
+            }
             row = op.next();
             eval.setTuple(row);
         }

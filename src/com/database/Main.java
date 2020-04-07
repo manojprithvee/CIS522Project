@@ -1,12 +1,8 @@
 package com.database;
 
-import com.database.sql.SQL_Create_Table;
-import com.database.sql.SQL_Select;
+import com.database.RAtree.Sql_Parse;
 import net.sf.jsqlparser.parser.CCJSqlParser;
-import net.sf.jsqlparser.parser.ParseException;
 import net.sf.jsqlparser.statement.Statement;
-import net.sf.jsqlparser.statement.create.table.CreateTable;
-import net.sf.jsqlparser.statement.select.Select;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -31,19 +27,7 @@ public class Main {
                         CCJSqlParser parser = new CCJSqlParser(input);
                         try {
                             Statement stmt = parser.Statement();
-                            if (stmt instanceof Select) {
-                                try {
-                                    new SQL_Select((Select) stmt).getResult();
-                                } catch (Exception e) {
-                                    System.out.println("SQL syntax error"); //$NON-NLS-1$
-                                    e.printStackTrace();
-                                }
-                                System.out.println("=");
-                            } else if (stmt instanceof CreateTable) {
-                                new SQL_Create_Table((CreateTable) stmt).getResult();
-                            } else {
-                                throw new ParseException("Only SELECT and CREATE TABLE statement is valid"); //$NON-NLS-1$
-                            }
+                            stmt.accept(new Sql_Parse());
                         } catch (Exception e) {
                             System.out.println("SQL syntax error"); //$NON-NLS-1$
                             e.printStackTrace();
@@ -66,14 +50,7 @@ public class Main {
 
                 try {
                     Statement stmt = parser.Statement();
-                    if (stmt instanceof Select) {
-                        new SQL_Select((Select) stmt).getResult();
-                        System.out.println("=");
-                    } else if (stmt instanceof CreateTable) {
-                        new SQL_Create_Table((CreateTable) stmt).getResult();
-                    } else {
-                        throw new ParseException("Only SELECT and CREATE TABLE statement is valid"); //$NON-NLS-1$
-                    }
+                    stmt.accept(new Sql_Parse());
                 } catch (Exception e) {
                     System.out.println("SQL syntax error"); //$NON-NLS-1$
                     e.printStackTrace();

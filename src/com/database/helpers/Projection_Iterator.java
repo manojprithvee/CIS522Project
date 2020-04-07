@@ -11,27 +11,22 @@ import net.sf.jsqlparser.statement.select.SelectExpressionItem;
 import net.sf.jsqlparser.statement.select.SelectItem;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 public class Projection_Iterator implements DB_Iterator {
 
     final DB_Iterator op;
-    final Table table;
     final HashMap<String, Integer> schema;
     final boolean allColumns;
     ArrayList<SelectItem> to_keep;
     Object[] row;
 
-    public Projection_Iterator(DB_Iterator op, List<SelectItem> p, Table table, boolean allColumns) {
-
+    public Projection_Iterator(DB_Iterator op, List<SelectItem> p, boolean allColumns, LinkedHashMap<String, Integer> new_schema) {
         this.op = op;
         this.row = new Object[p.size()];
         this.to_keep = (ArrayList<SelectItem>) p;
-        this.table = table;
         this.schema = Shared_Variables.current_schema;
+        Shared_Variables.current_schema = new_schema;
         this.allColumns = allColumns;
     }
 
@@ -42,7 +37,7 @@ public class Projection_Iterator implements DB_Iterator {
     }
 
     @Override
-    public Object[] next() throws SQLException {
+    public Object[] next() {
 
         Object[] temp = op.next();
         Evaluator eval = new Evaluator(schema, temp);
@@ -56,7 +51,7 @@ public class Projection_Iterator implements DB_Iterator {
             if (f instanceof AllTableColumns) {
                 AllTableColumns a = (AllTableColumns) f;
                 Table tab = a.getTable();
-                for (Iterator<String> iterator = Shared_Variables.current_schema.keySet().iterator(); iterator.hasNext(); ) {
+                for (Iterator<String> iterator = this.schema.keySet().iterator(); iterator.hasNext(); ) {
                     String j;
                     j = iterator.next();
                     SelectExpressionItem expItem;
@@ -95,7 +90,7 @@ public class Projection_Iterator implements DB_Iterator {
 
     @Override
     public Table getTable() {
-        return table;
+        return null;
     }
 
 }

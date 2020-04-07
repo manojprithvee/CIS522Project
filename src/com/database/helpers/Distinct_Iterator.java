@@ -2,7 +2,6 @@ package com.database.helpers;
 
 import net.sf.jsqlparser.schema.Table;
 
-import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -14,6 +13,7 @@ public class Distinct_Iterator implements DB_Iterator {
 
     public Distinct_Iterator(DB_Iterator DB_Iterator) {
         this.DB_Iterator = DB_Iterator;
+
     }
 
     @Override
@@ -22,9 +22,10 @@ public class Distinct_Iterator implements DB_Iterator {
     }
 
     @Override
-    public Object[] next() throws SQLException {
+    public Object[] next() {
         Object[] row;
         row = DB_Iterator.next();
+
         while (true) {
             if (row == null) break;
             if (!buffer.contains(Arrays.asList(row))) {

@@ -17,8 +17,13 @@ public class Average extends Aggregator {
         this.schema = schema;
     }
 
-    public PrimitiveValue get_results(Object[] row) throws SQLException {
+    public PrimitiveValue get_results(Object[] row) {
         evaluator.setTuple(row);
-        return evaluator.eval(new Division(new Sum(expression, schema).get_results(row), new Count(expression, schema).get_results(row)));
+        try {
+            return evaluator.eval(new Division(new Sum(expression, schema).get_results(row), new Count(expression, schema).get_results(row)));
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 }

@@ -16,6 +16,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 
 
@@ -26,13 +27,27 @@ public class Scan_Iterator implements DB_Iterator {
     BufferedReader br = null;
     Iterator scan = null;
     private List<CSVRecord> data;
+    LinkedHashMap<String, Integer> schema;
 
     public Scan_Iterator(File f, Table table) {
         this.file = f;
         this.table = table;
         this.full = false;
         reset();
+        schema = Shared_Variables.list_tables.get(table.getName().toUpperCase());
+
         Shared_Variables.current_schema = Shared_Variables.list_tables.get(table.getName().toUpperCase());
+        if (table.getAlias() != null) {
+            LinkedHashMap<String, Integer> tempschema = new LinkedHashMap<>();
+            var count = 0;
+            for (var i : Shared_Variables.current_schema.keySet()) {
+                String column = i;
+                String x = column.substring(column.indexOf(".") + 1);
+                tempschema.put(table.getAlias().toUpperCase() + "." + x, count);
+                count++;
+            }
+            Shared_Variables.list_tables.put(table.getAlias().toUpperCase(), tempschema);
+        }
     }
 
     public Scan_Iterator(File f, Table table, boolean full) {

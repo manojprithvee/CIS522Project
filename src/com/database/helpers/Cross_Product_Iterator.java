@@ -4,21 +4,31 @@ import com.database.Shared_Variables;
 import net.sf.jsqlparser.schema.Table;
 
 import java.io.File;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 
 public class Cross_Product_Iterator implements DB_Iterator {
 
-    final Table table;
-    private final int size;
+    Table table;
+    private int size;
+    private Table righttable, lefttable;
     DB_Iterator leftIterator, rightIterator;
     private Object[] temp1;
 
-    public Cross_Product_Iterator(DB_Iterator oper, Table righttable,
-                                  Table lefttable) throws SQLException {
+    public Cross_Product_Iterator(DB_Iterator leftIterator, DB_Iterator rightIterator, Table righttable,
+                                  Table lefttable) {
+        this.righttable = righttable;
+        this.lefttable = lefttable;
+        this.leftIterator = leftIterator;
+        this.rightIterator = rightIterator;
+        main(lefttable, righttable);
+    }
+
+    public Cross_Product_Iterator(DB_Iterator oper, Table righttable, Table lefttable) {
         leftIterator = oper;
+        this.righttable = righttable;
+        this.lefttable = lefttable;
         String dataFileName = righttable.getName() + ".dat";
         dataFileName = Shared_Variables.table_location.toString() + File.separator + dataFileName.toLowerCase();
         try {
@@ -26,12 +36,16 @@ public class Cross_Product_Iterator implements DB_Iterator {
         } catch (NullPointerException e) {
             System.out.println("Null pointer exception in JoinOperator()");
         }
+        main(lefttable, righttable);
 
+    }
 
+    private void main(Table lefttable, Table righttable) {
         LinkedHashMap<String, Integer> newSchema = new LinkedHashMap<>();
-
         ArrayList<String> dataType = new ArrayList<>();
-        String newTableName = lefttable.getAlias() + "," + righttable.getAlias();
+        String newTableName = lefttable.getAlias() +
+                "," +
+                righttable.getAlias();
         this.table = new Table(newTableName, newTableName);
         this.table.setAlias(newTableName);
         dataType = create_new_schema(newSchema, lefttable, righttable, dataType);
@@ -46,11 +60,7 @@ public class Cross_Product_Iterator implements DB_Iterator {
     public void reset() {
         leftIterator.reset();
         rightIterator.reset();
-        try {
-            temp1 = leftIterator.next();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+        temp1 = leftIterator.next();
     }
 
 
@@ -63,6 +73,7 @@ public class Cross_Product_Iterator implements DB_Iterator {
         }
         sizes = newSchema.size();
         oldschema = Shared_Variables.list_tables.get(righttable.getAlias());
+//        System.out.println(oldschema);
         dataType.addAll(Shared_Variables.schema_store.get(righttable.getName()));
         for (String col : oldschema.keySet()) {
             newSchema.put(col, oldschema.get(col) + sizes);
@@ -71,7 +82,7 @@ public class Cross_Product_Iterator implements DB_Iterator {
     }
 
     @Override
-    public Object[] next() throws SQLException {
+    public Object[] next() {
         Object[] temp2 = rightIterator.next();
         if (temp2 == null) {
             temp1 = leftIterator.next();

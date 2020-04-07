@@ -18,23 +18,36 @@ public class Max_Min extends Aggregator {
         this.i = i;
     }
 
-    public PrimitiveValue get_results(Object[] row) throws SQLException {
+    public PrimitiveValue get_results(Object[] row) {
         if (row != null) {
             evaluator.setTuple(row);
-            PrimitiveValue data = evaluator.eval(expression);
+            PrimitiveValue data = null;
+            try {
+                data = evaluator.eval(expression);
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
             if (data == null) return data;
             if (i == 0) {
 //              min
-                if ((output == null) || (evaluator.eval(new MinorThan(data, output)).toBool())) {
-                    output = data;
-                    return data;
+                try {
+                    if ((output == null) || (evaluator.eval(new MinorThan(data, output)).toBool())) {
+                        output = data;
+                        return data;
+                    }
+                } catch (SQLException e) {
+                    e.printStackTrace();
                 }
                 return output;
             } else {
 //              max
-                if ((output == null) || (evaluator.eval(new GreaterThan(data, output)).toBool())) {
-                    output = data;
-                    return data;
+                try {
+                    if ((output == null) || (evaluator.eval(new GreaterThan(data, output)).toBool())) {
+                        output = data;
+                        return data;
+                    }
+                } catch (SQLException e) {
+                    e.printStackTrace();
                 }
                 return output;
             }

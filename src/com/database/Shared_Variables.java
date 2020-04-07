@@ -12,6 +12,7 @@ public class Shared_Variables {
     public static final HashMap<String, LinkedHashMap<String, Integer>> list_tables = new HashMap<>();
     public static LinkedHashMap<String, Integer> current_schema = new LinkedHashMap<String, Integer>();
     public static ArrayList<String> column_used = new ArrayList<>();
+    public static int table = 0;
     public static File table_location = new File("data/");
     public static HashMap<String, Expression> rename = new HashMap<>();
 }

@@ -42,7 +42,7 @@ public class Evaluator extends Eval {
         else if (structure.containsKey(Shared_Variables.rename.get(main_column.getColumnName()).toString()))
             id = structure.get(Shared_Variables.rename.get(main_column.getColumnName()).toString());
         else id = columnchange(id, main_column.getColumnName());
-        return (PrimitiveValue) row[id];
+            return (PrimitiveValue) row[id];
     }
 
     public int columnchange(int id, String columnName) {
