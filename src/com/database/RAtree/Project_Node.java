@@ -5,6 +5,7 @@ import com.database.helpers.Aggregate_Iterator;
 import com.database.helpers.DB_Iterator;
 import com.database.helpers.Group_By_Iterator;
 import com.database.helpers.Projection_Iterator;
+import com.database.sql.Select_Item_Builder;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.Function;
 import net.sf.jsqlparser.schema.Column;
@@ -59,8 +60,7 @@ public class Project_Node extends RA_Tree {
             }
             count++;
         }
-
-
+        schema = new_schema;
     }
 
     @Override
@@ -68,6 +68,7 @@ public class Project_Node extends RA_Tree {
 
         if (allColumns) return this.getLeft().get_iterator();
         List<SelectItem> inSchema = null;
+
         if (isattribule && isagg) {
             return new Group_By_Iterator(left.get_iterator(), body.getSelectItems(), body.getGroupByColumnReferences(), new_schema);
         } else if (!isattribule && isagg) {
@@ -78,5 +79,18 @@ public class Project_Node extends RA_Tree {
                     body.getSelectItems(),
                     allColumns, new_schema);
         }
+    }
+
+    @Override
+    public String toString() {
+        return "Project_Node{" +
+                "inExpressions=" + inExpressions +
+                ", body=" + body +
+                ", table=" + table +
+                ", isagg=" + isagg +
+                ", isattribule=" + isattribule +
+                ", new_schema=" + new_schema +
+                ", allColumns=" + allColumns +
+                '}';
     }
 }

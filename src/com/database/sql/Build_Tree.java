@@ -1,10 +1,13 @@
-package com.database.RAtree;
+package com.database.sql;
 
+import com.database.RAtree.*;
 import com.database.Shared_Variables;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.select.*;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 
@@ -29,49 +32,21 @@ public class Build_Tree implements SelectVisitor {
         return schema;
     }
 
-    @Override
-    public void visit(PlainSelect plainSelect) {
-        Table t = null;
-        if (!(plainSelect.getFromItem() instanceof SubSelect))
-            t = (Table) plainSelect.getFromItem();
-        RA_Tree output = build_from_joins(plainSelect.getFromItem(), plainSelect.getJoins());
+    public static void manage_renaming(SelectBody body) {
 
-        if (plainSelect.getWhere() != null) {
-            RA_Tree selectTree = new Select_Node(plainSelect.getWhere());
-            selectTree.setLeft(output);
-            output = selectTree;
+
+        ArrayList<SelectItem> selectItems = (ArrayList<SelectItem>) ((PlainSelect) body).getSelectItems();
+        Shared_Variables.rename = new HashMap<>();
+        for (SelectItem a : selectItems) {
+            if ((a instanceof AllTableColumns) || (a instanceof AllColumns))
+                return;
+            SelectExpressionItem s = (SelectExpressionItem) a;
+            String alias = s.getAlias();
+            if (alias == null) {
+                s.setAlias(s.getExpression().toString());
+            }
+            Shared_Variables.rename.put(s.getAlias(), s.getExpression());
         }
-        RA_Tree projectTree = new Project_Node(plainSelect, t);
-        projectTree.setLeft(output);
-        output = projectTree;
-
-        if (plainSelect.getHaving() != null) {
-            RA_Tree selectTree = new Select_Node(plainSelect.getHaving());
-            selectTree.setLeft(output);
-            output = selectTree;
-        }
-
-        if (plainSelect.getOrderByElements() != null) {
-            List<OrderByElement> orderByElements = plainSelect.getOrderByElements();
-            RA_Tree orderByTree = new Order_By_Node(orderByElements, t);
-            orderByTree.setLeft(output);
-            output = orderByTree;
-        }
-
-        if (plainSelect.getDistinct() != null) {
-            RA_Tree distinctTree = new Distinct_Node();
-            distinctTree.setLeft(output);
-            output = distinctTree;
-        }
-
-        if (plainSelect.getLimit() != null) {
-            RA_Tree limitTree = new Limit_Node(plainSelect.getLimit());
-            limitTree.setLeft(output);
-            output = limitTree;
-        }
-        root = output;
-
-        schema = Shared_Variables.current_schema;
     }
 
     public RA_Tree getRoot() {
@@ -92,6 +67,58 @@ public class Build_Tree implements SelectVisitor {
         root = output;
     }
 
+    @Override
+    public void visit(PlainSelect plainSelect) {
+        manage_renaming(plainSelect);
+        Table t = null;
+        if (!(plainSelect.getFromItem() instanceof SubSelect))
+            t = (Table) plainSelect.getFromItem();
+        RA_Tree output = build_from_joins(plainSelect.getFromItem(), plainSelect.getJoins());
+
+        if (plainSelect.getWhere() != null) {
+            RA_Tree selectTree = new Select_Node(plainSelect.getWhere());
+            output.setParent(selectTree);
+            selectTree.setLeft(output);
+            output = selectTree;
+        }
+        RA_Tree projectTree = new Project_Node(plainSelect, t);
+        output.setParent(projectTree);
+        projectTree.setLeft(output);
+        output = projectTree;
+
+        if (plainSelect.getHaving() != null) {
+            RA_Tree selectTree = new Select_Node(plainSelect.getHaving());
+            output.setParent(selectTree);
+            selectTree.setLeft(output);
+            output = selectTree;
+        }
+
+        if (plainSelect.getOrderByElements() != null) {
+            List<OrderByElement> orderByElements = plainSelect.getOrderByElements();
+            RA_Tree orderByTree = new Order_By_Node(orderByElements, t);
+            output.setParent(orderByTree);
+            orderByTree.setLeft(output);
+            output = orderByTree;
+        }
+
+        if (plainSelect.getDistinct() != null) {
+            RA_Tree distinctTree = new Distinct_Node();
+            output.setParent(distinctTree);
+            distinctTree.setLeft(output);
+            output = distinctTree;
+        }
+
+        if (plainSelect.getLimit() != null) {
+            RA_Tree limitTree = new Limit_Node(plainSelect.getLimit());
+            output.setParent(limitTree);
+            limitTree.setLeft(output);
+            output = limitTree;
+        }
+        root = output;
+        Optimize.selectionpushdown(root);
+        schema = Shared_Variables.current_schema;
+    }
+
     public RA_Tree build_from_joins(FromItem fromItem, List<Join> joins) {
 
         RA_Tree output = null;
@@ -100,12 +127,12 @@ public class Build_Tree implements SelectVisitor {
             return new FromItems_Builder(fromItem).getCurrent();
         }
         for (Join join : joins) {
-            RA_Tree left;
+            RA_Tree right;
             if (output != null) {
-                left = output;
+                right = output;
             } else {
-                left = new FromItems_Builder(fromItem).getCurrent();
-                table = left.get_iterator().getTable();
+                right = new FromItems_Builder(fromItem, true).getCurrent();
+                table = right.get_iterator().getTable();
                 if (table == null) {
                     if (join.getRightItem().getAlias() != null) {
                         table = new Table(join.getRightItem().getAlias());
@@ -118,7 +145,7 @@ public class Build_Tree implements SelectVisitor {
                 }
             }
             Expression expression = join.getOnExpression();
-            RA_Tree right = new FromItems_Builder(join.getRightItem()).getCurrent();
+            RA_Tree left = new FromItems_Builder(join.getRightItem()).getCurrent();
             Table t;
             if (join.getRightItem() instanceof Table) {
                 t = ((Table) join.getRightItem());
@@ -132,10 +159,14 @@ public class Build_Tree implements SelectVisitor {
                     Shared_Variables.table += 1;
                 }
             }
+
             output = new Cross_Product_Node(left, right, t, table);
+            left.setParent(output);
+            right.setParent(output);
             table = output.get_iterator().getTable();
             if (expression != null) {
                 RA_Tree select_node = new Select_Node(expression);
+                output.setParent(select_node);
                 select_node.setLeft(output);
                 output = select_node;
             }

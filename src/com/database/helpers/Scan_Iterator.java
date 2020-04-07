@@ -19,7 +19,6 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 
-
 public class Scan_Iterator implements DB_Iterator {
     final Table table;
     private final boolean full;
@@ -29,13 +28,12 @@ public class Scan_Iterator implements DB_Iterator {
     private List<CSVRecord> data;
     LinkedHashMap<String, Integer> schema;
 
-    public Scan_Iterator(File f, Table table) {
+    public Scan_Iterator(File f, Table table, boolean full) {
         this.file = f;
         this.table = table;
-        this.full = false;
+        this.full = full;
         reset();
         schema = Shared_Variables.list_tables.get(table.getName().toUpperCase());
-
         Shared_Variables.current_schema = Shared_Variables.list_tables.get(table.getName().toUpperCase());
         if (table.getAlias() != null) {
             LinkedHashMap<String, Integer> tempschema = new LinkedHashMap<>();
@@ -48,14 +46,6 @@ public class Scan_Iterator implements DB_Iterator {
             }
             Shared_Variables.list_tables.put(table.getAlias().toUpperCase(), tempschema);
         }
-    }
-
-    public Scan_Iterator(File f, Table table, boolean full) {
-        this.file = f;
-        this.table = table;
-        this.full = full;
-        reset();
-        Shared_Variables.current_schema = Shared_Variables.list_tables.get(table.getName().toUpperCase());
     }
 
     @Override

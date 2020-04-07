@@ -1,6 +1,6 @@
 package com.database;
 
-import com.database.RAtree.Sql_Parse;
+import com.database.sql.Sql_Parse;
 import net.sf.jsqlparser.parser.CCJSqlParser;
 import net.sf.jsqlparser.statement.Statement;
 

@@ -18,10 +18,10 @@ public class Cross_Product_Iterator implements DB_Iterator {
 
     public Cross_Product_Iterator(DB_Iterator leftIterator, DB_Iterator rightIterator, Table righttable,
                                   Table lefttable) {
-        this.righttable = righttable;
-        this.lefttable = lefttable;
-        this.leftIterator = leftIterator;
-        this.rightIterator = rightIterator;
+        this.righttable = lefttable;
+        this.lefttable = righttable;
+        this.leftIterator = rightIterator;
+        this.rightIterator = leftIterator;
         main(lefttable, righttable);
     }
 

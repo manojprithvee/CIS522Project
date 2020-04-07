@@ -1,5 +1,6 @@
 package com.database.RAtree;
 
+import com.database.Shared_Variables;
 import com.database.helpers.Cross_Product_Iterator;
 import com.database.helpers.DB_Iterator;
 import net.sf.jsqlparser.schema.Table;
@@ -18,6 +19,7 @@ public class Cross_Product_Node extends RA_Tree {
         if (this.righttable.getAlias() == null) {
             this.righttable.setAlias(this.righttable.getName());
         }
+        schema = Shared_Variables.current_schema;
     }
 
     public DB_Iterator get_iterator() {
@@ -29,4 +31,11 @@ public class Cross_Product_Node extends RA_Tree {
                 lefttable);
     }
 
+    @Override
+    public String toString() {
+        return "Cross_Product_Node{" +
+                "lefttable=" + lefttable +
+                ", righttable=" + righttable +
+                '}';
+    }
 }

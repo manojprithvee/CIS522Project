@@ -1,5 +1,6 @@
-package com.database.RAtree;
+package com.database.sql;
 
+import com.database.RAtree.RA_Tree;
 import com.database.Shared_Variables;
 import com.database.helpers.DB_Iterator;
 import net.sf.jsqlparser.expression.StringValue;
@@ -16,7 +17,6 @@ import net.sf.jsqlparser.statement.truncate.Truncate;
 import net.sf.jsqlparser.statement.update.Update;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 
@@ -56,23 +56,6 @@ public class Sql_Parse implements StatementVisitor {
         }
         Shared_Variables.current_schema = schema;
         Shared_Variables.list_tables.put(t.getAlias(), schema);
-    }
-
-    public static void manage_renaming(SelectBody body) {
-
-
-        ArrayList<SelectItem> selectItems = (ArrayList<SelectItem>) ((PlainSelect) body).getSelectItems();
-        Shared_Variables.rename = new HashMap<>();
-        for (SelectItem a : selectItems) {
-            if ((a instanceof AllTableColumns) || (a instanceof AllColumns))
-                return;
-            SelectExpressionItem s = (SelectExpressionItem) a;
-            String alias = s.getAlias();
-            if (alias == null) {
-                s.setAlias(s.getExpression().toString());
-            }
-            Shared_Variables.rename.put(s.getAlias(), s.getExpression());
-        }
     }
 
     public static void print(DB_Iterator input) {

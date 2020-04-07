@@ -39,7 +39,9 @@ public class Selection_Iterator implements DB_Iterator {
         while (true) {
             if (row == null) break;
             try {
-                if (((BooleanValue) eval.eval(condition)).getValue()) return row;
+                if (((BooleanValue) eval.eval(condition)).getValue()) {
+                    return row;
+                }
             } catch (SQLException e) {
                 e.
                         printStackTrace();

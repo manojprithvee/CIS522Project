@@ -1,5 +1,7 @@
-package com.database.RAtree;
+package com.database.sql;
 
+import com.database.RAtree.RA_Tree;
+import com.database.RAtree.Scan_Node;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.select.FromItem;
 import net.sf.jsqlparser.statement.select.FromItemVisitor;
@@ -11,11 +13,18 @@ import java.util.LinkedHashMap;
 public class FromItems_Builder implements FromItemVisitor {
     FromItem fromItem;
     RA_Tree current;
+    boolean flag;
     private LinkedHashMap<String, Integer> schema;
 
     public FromItems_Builder(FromItem fromItems) {
         this.fromItem = fromItems;
+        this.flag = false;
+        fromItems.accept(this);
+    }
 
+    public FromItems_Builder(FromItem fromItems, boolean flag) {
+        this.fromItem = fromItems;
+        this.flag = flag;
         fromItems.accept(this);
     }
 
@@ -45,7 +54,7 @@ public class FromItems_Builder implements FromItemVisitor {
 
     @Override
     public void visit(Table table) {
-        current = new Scan_Node(table);
+        current = new Scan_Node(table, flag);
     }
 
 
