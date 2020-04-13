@@ -1,26 +1,28 @@
 package com.database.RAtree;
 
 import com.database.Shared_Variables;
-import com.database.helpers.Cross_Product_Iterator;
-import com.database.helpers.DB_Iterator;
+import com.database.helpers.Grace_Join_Iterator;
+import net.sf.jsqlparser.expression.BinaryExpression;
+import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.schema.Table;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 
-public class Cross_Product_Node extends RA_Tree {
-    private final Table righttable;
-    private final Table lefttable;
+
+public class Join_Node extends RA_Tree {
+    private final Table lefttable, righttable;
     private final Table table;
     private final int size;
-    Cross_Product_Iterator iterator;
+    Grace_Join_Iterator itrator;
+    Expression expression;
 
-    public Cross_Product_Node(RA_Tree left, RA_Tree right) {
+    public Join_Node(RA_Tree left, RA_Tree right, Expression expression) {
         this.left = left;
         this.right = right;
-        this.righttable = left.get_iterator().getTable();
-        this.lefttable = right.get_iterator().getTable();
+        this.lefttable = left.get_iterator().getTable();
+        this.righttable = right.get_iterator().getTable();
         if (righttable.getAlias() == null) righttable.setAlias(righttable.getName());
         if (lefttable.getAlias() == null) lefttable.setAlias(lefttable.getName());
         LinkedHashMap<String, Integer> newSchema = new LinkedHashMap<>();
@@ -34,6 +36,14 @@ public class Cross_Product_Node extends RA_Tree {
         Shared_Variables.schema_store.put(newTableName, dataType);
         size = newSchema.size();
         Shared_Variables.current_schema = (LinkedHashMap<String, Integer>) newSchema.clone();
+        schema = Shared_Variables.current_schema;
+        this.expression = expression;
+        if (this.lefttable.getAlias() == null) {
+            this.lefttable.setAlias(this.lefttable.getName());
+        }
+        if (this.righttable.getAlias() == null) {
+            this.righttable.setAlias(this.righttable.getName());
+        }
         schema = Shared_Variables.current_schema;
     }
 
@@ -54,19 +64,17 @@ public class Cross_Product_Node extends RA_Tree {
         return dataType;
     }
 
-    public DB_Iterator get_iterator() {
-        iterator = new Cross_Product_Iterator(
-                left,
-                right);
-//        schema = Shared_Variables.current_schema;
-        return iterator;
+    public Grace_Join_Iterator get_iterator() {
+        itrator = new Grace_Join_Iterator(left, right, lefttable, righttable, (BinaryExpression) expression);
+        schema = Shared_Variables.current_schema;
+        return itrator;
     }
 
     @Override
     public String toString() {
-        return "Cross_Product_Node{" +
-                "lefttable=" + left.get_iterator().getTable().getName() +
-                ", righttable=" + right.get_iterator().getTable().getName() +
+        return "Join_Node{" +
+                "lefttable=" + lefttable +
+                ", righttable=" + righttable +
                 '}';
     }
 }

@@ -68,43 +68,6 @@ public class Group_By_Iterator implements DB_Iterator {
             indexes.add(index);
         }
 
-//        finalschema = new LinkedHashMap<>();
-//        count = 0;
-//        for (SelectItem f : list) {
-//            if (((SelectExpressionItem) f).getExpression() instanceof Function) {
-//                Function function = (Function) ((SelectExpressionItem) f).getExpression();
-//                if (((SelectExpressionItem) f).getAlias() != null) {
-//                    finalschema.put(table.getName() + "." + ((SelectExpressionItem) f).getAlias(), count);
-//                } else {
-//                    finalschema.put(table.getName() + "." + function.getName(), count);
-//                }
-//            } else {
-//                Column main_column = (Column) ((SelectExpressionItem) f).getExpression();
-//                int id = 0;
-//                HashMap<Integer, String> names;
-//                String finalcolumn = "";
-//                if (!Shared_Variables.rename.containsKey(main_column.getColumnName())) {
-//                    names = columnchange(id, main_column.getColumnName());
-//                    finalcolumn = (String) names.values().toArray()[0];
-//                    id = (int) names.keySet().toArray()[0];
-//                } else if (newschema.containsKey(main_column.getColumnName())) {
-//                    finalcolumn = main_column.getColumnName();
-//                    id = newschema.get(main_column.getColumnName());
-//                } else if (newschema.containsKey(Shared_Variables.rename.get(main_column.getColumnName()).toString())) {
-//                    finalcolumn = Shared_Variables.rename.get(main_column.getColumnName()).toString();
-//                    id = newschema.get(Shared_Variables.rename.get(main_column.getColumnName()).toString());
-//                } else {
-//                    names = columnchange(id, main_column.getColumnName());
-//                    finalcolumn = (String) names.values().toArray()[0];
-//                    id = (int) names.keySet().toArray()[0];
-//                }
-//                finalschema.put(finalcolumn, count);
-//            }
-//            count++;
-//        }
-
-//        Shared_Variables.current_schema = finalschema;
-
         bufferHash = this.buffer.stream().collect(Collectors.groupingBy(w -> grouping(w)));
         ArrayList<Double> function_results = new ArrayList<>();
         bufferHashitrator = bufferHash.keySet().iterator();

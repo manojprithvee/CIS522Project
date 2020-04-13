@@ -1,11 +1,14 @@
 package com.database.sql;
 
+import com.database.RAtree.Cross_Product_Node;
+import com.database.RAtree.Join_Node;
 import com.database.RAtree.RA_Tree;
 import com.database.RAtree.Select_Node;
 import com.database.Shared_Variables;
 import net.sf.jsqlparser.expression.BinaryExpression;
 import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
 import net.sf.jsqlparser.expression.operators.conditional.OrExpression;
+import net.sf.jsqlparser.expression.operators.relational.EqualsTo;
 import net.sf.jsqlparser.schema.Column;
 
 import java.util.*;
@@ -21,7 +24,7 @@ public class Optimize {
                 for (BinaryExpression expression : splitconditions(where)) {
                     List<Column> column_used = getcolumnused(expression);
                     RA_Tree lowestChild = getLowestChild(select.getLeft(), column_used);
-                    Select_Node new_select = new Select_Node(expression);
+                    Select_Node new_select = new Select_Node(expression, lowestChild.get_iterator().getTable());
                     RA_Tree parent = lowestChild.getParent();
                     if (parent.getLeft() == lowestChild) {
                         parent.setLeft(new_select);
@@ -37,8 +40,50 @@ public class Optimize {
             select.getParent().setLeft(select.getLeft());
             select.getLeft().setParent(select.getParent());
         }
-//        System.out.println("______");
-//        printtree(abc,true,"");
+        List<RA_Tree> crossNodes = Optimize.getnodes(abc, Cross_Product_Node.class);
+        for (RA_Tree node : crossNodes) {
+            if (!(node instanceof Cross_Product_Node)) continue;
+            Select_Node selectnode = getSelectParent(node.getParent());
+            if (selectnode == null) continue;
+            popNode(selectnode);
+            popNode(node);
+            RA_Tree parent = node.getLeft().getParent();
+            Join_Node join = new Join_Node(node.getLeft(), node.getRight(), selectnode.where);
+            join.setParent(parent);
+            pushNode(join, join.getParent(), join.getLeft(), join.getRight());
+        }
+    }
+
+    public static void popNode(RA_Tree node) {
+        RA_Tree parent = node.getParent();
+        RA_Tree child = node.getLeft();
+
+        if (parent != null) {
+            if (parent.getLeft() == node) parent.setLeft(child);
+            else parent.setRight(child);
+        }
+        if (child != null) child.setParent(parent);
+    }
+
+    public static void pushNode(RA_Tree node, RA_Tree parent, RA_Tree left, RA_Tree right) {
+        if (parent != null) {
+            if (parent.getLeft() == left) parent.setLeft(node);
+            else parent.setRight(node);
+        }
+
+        if (left != null) left.setParent(node);
+        if (right != null) right.setParent(node);
+
+        node.setParent(parent);
+        node.setLeft(left);
+        node.setRight(right);
+    }
+
+    public static Select_Node getSelectParent(RA_Tree parent) {
+        if (parent == null) return null;
+        if (!(parent instanceof Select_Node)) return null;
+        if (((Select_Node) parent).where instanceof EqualsTo) return (Select_Node) parent;
+        else return getSelectParent(parent.getParent());
     }
 
 
@@ -94,10 +139,10 @@ public class Optimize {
         RA_Tree[] children = {childNode.getLeft(), childNode.getRight()};
 
         for (RA_Tree child : children) {
+
             if (child != null) {
                 LinkedHashMap<String, Integer> schema = child.getSchema();
                 boolean containsAll = true;
-
                 for (Column column : columns) {
                     if (!get(schema, column)) containsAll = false;
                 }

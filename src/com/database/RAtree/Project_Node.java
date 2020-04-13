@@ -65,7 +65,6 @@ public class Project_Node extends RA_Tree {
 
     @Override
     public DB_Iterator get_iterator() {
-
         if (allColumns) return this.getLeft().get_iterator();
         List<SelectItem> inSchema = null;
 

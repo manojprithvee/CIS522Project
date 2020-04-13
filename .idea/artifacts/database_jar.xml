@@ -3,9 +3,9 @@
     <output-path>$PROJECT_DIR$/out/artifacts/database_jar</output-path>
     <root id="archive" name="database.jar">
       <element id="module-output" name="database" />
-      <element id="extracted-dir" path="$USER_HOME$/Downloads/evallib-1.0.jar" path-in-jar="/" />
-      <element id="extracted-dir" path="$USER_HOME$/Downloads/commons-csv-1.8/commons-csv-1.8.jar" path-in-jar="/" />
-      <element id="extracted-dir" path="$USER_HOME$/Downloads/jsqlparser-1.0.0.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/lib/evallib-1.0.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/lib/commons-csv-1.8.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/lib/jsqlparser-1.0.0.jar" path-in-jar="/" />
     </root>
   </artifact>
 </component>

@@ -33,8 +33,10 @@ public class Grace_Join_Iterator implements DB_Iterator {
 
     public Grace_Join_Iterator(RA_Tree left, RA_Tree right, Table lefttable, Table righttable,
                                BinaryExpression expression) {
-        this.righttable = righttable;
-        this.lefttable = lefttable;
+        this.lefttable = left.get_iterator().getTable();
+        this.righttable = right.get_iterator().getTable();
+        if (righttable.getAlias() == null) righttable.setAlias(righttable.getName());
+        if (lefttable.getAlias() == null) lefttable.setAlias(lefttable.getName());
         this.rightIterator = right.get_iterator();
         this.leftIterator = left.get_iterator();
         this.expression = expression;
@@ -73,8 +75,6 @@ public class Grace_Join_Iterator implements DB_Iterator {
                 }
             }
         }
-        System.out.println(leftindex);
-        System.out.println(leftcolumn);
         newschama = buildschema(newleftschema, right.getSchema());
         Object[] row = this.leftIterator.next();
         map = new HashMap<>();
@@ -91,7 +91,6 @@ public class Grace_Join_Iterator implements DB_Iterator {
             row = this.leftIterator.next();
         }
         group = map.keySet().iterator();
-        System.out.println(map.keySet());
         eval = new Evaluator(newschama);
         main(lefttable, righttable);
     }
@@ -107,9 +106,8 @@ public class Grace_Join_Iterator implements DB_Iterator {
     private void main(Table lefttable, Table righttable) {
         LinkedHashMap<String, Integer> newSchema = new LinkedHashMap<>();
         ArrayList<String> dataType = new ArrayList<>();
-        String newTableName = lefttable.getAlias() +
-                "," +
-                righttable.getAlias();
+        String newTableName = String.valueOf(Shared_Variables.table);
+        Shared_Variables.table += 1;
         this.table = new Table(newTableName, newTableName);
         this.table.setAlias(newTableName);
         dataType = create_new_schema(newSchema, righttable, lefttable, dataType);
@@ -118,7 +116,6 @@ public class Grace_Join_Iterator implements DB_Iterator {
         temp2 = rightIterator.next();
         size = newSchema.size();
         Shared_Variables.current_schema = (LinkedHashMap<String, Integer>) newSchema.clone();
-        System.out.println(Shared_Variables.current_schema);
     }
 
 
@@ -135,7 +132,6 @@ public class Grace_Join_Iterator implements DB_Iterator {
         for (String col : oldschema.keySet()) {
             newSchema.put(col, oldschema.get(col) + sizes);
         }
-        System.out.println(newSchema);
         return dataType;
     }
 

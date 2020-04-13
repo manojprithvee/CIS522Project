@@ -76,7 +76,7 @@ public class Build_Tree implements SelectVisitor {
         RA_Tree output = build_from_joins(plainSelect.getFromItem(), plainSelect.getJoins());
 
         if (plainSelect.getWhere() != null) {
-            RA_Tree selectTree = new Select_Node(plainSelect.getWhere());
+            RA_Tree selectTree = new Select_Node(plainSelect.getWhere(), t);
             output.setParent(selectTree);
             selectTree.setLeft(output);
             output = selectTree;
@@ -87,7 +87,7 @@ public class Build_Tree implements SelectVisitor {
         output = projectTree;
 
         if (plainSelect.getHaving() != null) {
-            RA_Tree selectTree = new Select_Node(plainSelect.getHaving());
+            RA_Tree selectTree = new Select_Node(plainSelect.getHaving(), t);
             output.setParent(selectTree);
             selectTree.setLeft(output);
             output = selectTree;
@@ -160,15 +160,23 @@ public class Build_Tree implements SelectVisitor {
                 }
             }
 
-            output = new Cross_Product_Node(left, right, t, table);
-            left.setParent(output);
-            right.setParent(output);
-            table = output.get_iterator().getTable();
+
             if (expression != null) {
-                RA_Tree select_node = new Select_Node(expression);
-                output.setParent(select_node);
-                select_node.setLeft(output);
-                output = select_node;
+                output = new Join_Node(right, left, expression);
+//                output = new Cross_Product_Node(left, right, t, table);
+                left.setParent(output);
+                right.setParent(output);
+                table = output.get_iterator().getTable();
+
+//                RA_Tree select_node = new Select_Node(expression);
+//                output.setParent(select_node);
+//                select_node.setLeft(output);
+//                output = select_node;
+            } else {
+                output = new Cross_Product_Node(left, right);
+                left.setParent(output);
+                right.setParent(output);
+                table = output.get_iterator().getTable();
             }
         }
 

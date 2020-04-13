@@ -1,10 +1,13 @@
 package com.database;
 
+import com.database.helpers.DB_Iterator;
 import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.schema.Column;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 
 public class Shared_Variables {
@@ -15,4 +18,47 @@ public class Shared_Variables {
     public static int table = 0;
     public static File table_location = new File("data/");
     public static HashMap<String, Expression> rename = new HashMap<>();
+
+    public static int get_index(Column main_column, HashMap<String, Integer> structure) {
+        String table;
+        int id = Integer.MAX_VALUE;
+        if ((main_column.getTable() != null) && (main_column.getTable().getName() != null)) {
+            table = main_column.getTable().getName();
+            if (!structure.containsKey(table + "." + main_column.getColumnName()))
+                id = columnchange(id, main_column.getTable() + "." + main_column.getColumnName(), structure);
+            else id = structure.get(table + "." + main_column.getColumnName());
+        } else if (!Shared_Variables.rename.containsKey(main_column.getColumnName()))
+            id = columnchange(id, main_column.getColumnName(), structure);
+        else if (structure.containsKey(main_column.getColumnName())) id = structure.get(main_column.getColumnName());
+        else if (structure.containsKey(Shared_Variables.rename.get(main_column.getColumnName()).toString()))
+            id = structure.get(Shared_Variables.rename.get(main_column.getColumnName()).toString());
+        else id = columnchange(id, main_column.getColumnName(), structure);
+        return id;
+    }
+
+    public static int columnchange(int id, String columnName, HashMap<String, Integer> structure) {
+        for (Iterator<String> iterator = structure.keySet().iterator(); iterator.hasNext(); ) {
+            String column = iterator.next();
+            String x = column.substring(column.indexOf(".") + 1);
+            if (x.equals(columnName)) id = structure.get(column);
+        }
+        return id;
+    }
+
+    public static HashMap<Object, ArrayList<Object[]>> make_index(int index, DB_Iterator iterator) {
+        HashMap<Object, ArrayList<Object[]>> map = new HashMap<>();
+        Object[] row = iterator.next();
+        while (row != null) {
+            ArrayList<Object[]> a = null;
+            if (map.containsKey(row[index])) {
+                a = map.get(row[index]);
+                a.add(row);
+            } else {
+                a = new ArrayList<>();
+                a.add(row);
+            }
+            map.put(row[index], a);
+        }
+        return map;
+    }
 }

@@ -16,12 +16,14 @@ public class Selection_Iterator implements DB_Iterator {
     final DB_Iterator op;
     final HashMap<String, Integer> schema;
     final Expression condition;
+    private final Table table;
 
-    public Selection_Iterator(DB_Iterator input, Expression condition) {
+    public Selection_Iterator(DB_Iterator input, Expression condition, Table table) {
 
         this.op = input;
         this.schema = Shared_Variables.current_schema;
         this.condition = condition;
+        this.table = table;
 
     }
 
@@ -54,6 +56,6 @@ public class Selection_Iterator implements DB_Iterator {
 
     @Override
     public Table getTable() {
-        return null;
+        return table;
     }
 }
