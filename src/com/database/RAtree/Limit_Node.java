@@ -1,6 +1,5 @@
 package com.database.RAtree;
 
-import com.database.Shared_Variables;
 import com.database.helpers.DB_Iterator;
 import com.database.helpers.Limit_Iterator;
 import net.sf.jsqlparser.statement.select.Limit;
@@ -8,10 +7,11 @@ import net.sf.jsqlparser.statement.select.Limit;
 public class Limit_Node extends RA_Tree {
     private final Limit limit;
 
-    public Limit_Node(Limit limit) {
+    public Limit_Node(RA_Tree left, Limit limit) {
         super();
+        this.left = left;
         this.limit = limit;
-        schema = Shared_Variables.current_schema;
+        schema = left.getSchema();
     }
 
     public DB_Iterator get_iterator() {

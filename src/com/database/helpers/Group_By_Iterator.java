@@ -1,6 +1,5 @@
 package com.database.helpers;
 
-import com.database.Shared_Variables;
 import com.database.aggregators.Aggregator;
 import com.database.sql.Evaluator;
 import net.sf.jsqlparser.expression.Function;
@@ -16,25 +15,19 @@ import java.util.stream.Collectors;
 
 public class Group_By_Iterator implements DB_Iterator {
 
-    private final DB_Iterator oper;
-    private final List<Column> groupByColumnReferences;
-    private final ArrayList<Object[]> buffer;
     private final ArrayList<Integer> indexes;
     private final Map<List<Object>, List<Object[]>> bufferHash;
     private final Iterator<List<Object>> bufferHashitrator;
     private final LinkedHashMap<String, Integer> newschema;
     private final List<SelectItem> list;
-    private final LinkedHashMap<String, Integer> lastschema;
+    private final LinkedHashMap<String, Integer> new_schema;
 
 
-    public Group_By_Iterator(DB_Iterator oper, List<SelectItem> list, List<Column> groupByColumnReferences, LinkedHashMap<String, Integer> new_schema) {
+    public Group_By_Iterator(DB_Iterator oper, List<SelectItem> list, List<Column> groupByColumnReferences, LinkedHashMap<String, Integer> new_schema, LinkedHashMap<String, Integer> lastschema) {
 
-        this.oper = oper;
         this.list = list;
-        this.lastschema = Shared_Variables.current_schema;
-        Shared_Variables.current_schema = new_schema;
-        this.groupByColumnReferences = groupByColumnReferences;
-        buffer = new ArrayList<Object[]>();
+        this.new_schema = new_schema;
+        ArrayList<Object[]> buffer = new ArrayList<Object[]>();
 //        schema = Shared_Variables.list_tables.get(table.getAlias());
 
         Object[] row = oper.next();
@@ -68,7 +61,7 @@ public class Group_By_Iterator implements DB_Iterator {
             indexes.add(index);
         }
 
-        bufferHash = this.buffer.stream().collect(Collectors.groupingBy(w -> grouping(w)));
+        bufferHash = buffer.stream().collect(Collectors.groupingBy(w -> grouping(w)));
         ArrayList<Double> function_results = new ArrayList<>();
         bufferHashitrator = bufferHash.keySet().iterator();
     }
@@ -98,7 +91,7 @@ public class Group_By_Iterator implements DB_Iterator {
             for (SelectItem f : list) {
                 if (((SelectExpressionItem) f).getExpression() instanceof Function) {
                     Function function = (Function) ((SelectExpressionItem) f).getExpression();
-                    Aggregator abc = Aggregator.get_agg(function, Shared_Variables.current_schema);
+                    Aggregator abc = Aggregator.get_agg(function, new_schema);
                     PrimitiveValue output = null;
                     for (var tuple : bufferHash.get(group)) {
                         output = abc.get_results(tuple);

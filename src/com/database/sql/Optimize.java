@@ -1,9 +1,6 @@
 package com.database.sql;
 
-import com.database.RAtree.Cross_Product_Node;
-import com.database.RAtree.Join_Node;
-import com.database.RAtree.RA_Tree;
-import com.database.RAtree.Select_Node;
+import com.database.RAtree.*;
 import com.database.Shared_Variables;
 import net.sf.jsqlparser.expression.BinaryExpression;
 import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
@@ -14,9 +11,8 @@ import net.sf.jsqlparser.schema.Column;
 import java.util.*;
 
 public class Optimize {
-    public static void selectionpushdown(RA_Tree abc) {
+    public static void selectionpushdown(RA_Tree abc, Set<String> columns) {
         List<RA_Tree> selectNodes = Optimize.getnodes(abc, Select_Node.class);
-//        printtree(abc,true,"");
         for (RA_Tree node : selectNodes) {
             Select_Node select = (Select_Node) node;
             if (select.where instanceof BinaryExpression) {
@@ -24,7 +20,7 @@ public class Optimize {
                 for (BinaryExpression expression : splitconditions(where)) {
                     List<Column> column_used = getcolumnused(expression);
                     RA_Tree lowestChild = getLowestChild(select.getLeft(), column_used);
-                    Select_Node new_select = new Select_Node(expression, lowestChild.get_iterator().getTable());
+                    Select_Node new_select = new Select_Node(lowestChild, expression, lowestChild.get_iterator().getTable());
                     RA_Tree parent = lowestChild.getParent();
                     if (parent.getLeft() == lowestChild) {
                         parent.setLeft(new_select);
@@ -32,7 +28,7 @@ public class Optimize {
                         parent.setRight(new_select);
                     }
                     new_select.setParent(parent);
-                    new_select.setLeft(lowestChild);
+//                    new_select.setLeft(lowestChild);
                     lowestChild.setParent(new_select);
                     new_select.setSchema(lowestChild.getSchema());
                 }
@@ -51,6 +47,21 @@ public class Optimize {
             Join_Node join = new Join_Node(node.getLeft(), node.getRight(), selectnode.where);
             join.setParent(parent);
             pushNode(join, join.getParent(), join.getLeft(), join.getRight());
+        }
+        List<RA_Tree> scans = Optimize.getnodes(abc, Scan_Node.class);
+        for (RA_Tree node : scans) {
+            Scan_Node table = (Scan_Node) node;
+            LinkedHashMap<String, Integer> schema = Shared_Variables.list_tables.get(table.getTable().getWholeTableName().toUpperCase());
+            LinkedHashMap<String, Integer> newSchema = new LinkedHashMap<>();
+            int count = 0;
+            for (String s : columns) {
+                if (schema.containsKey(s)) {
+                    newSchema.put(s, count);
+                    count++;
+                }
+            }
+            System.out.println(newSchema);
+            table.setSchema(newSchema);
         }
     }
 
@@ -88,7 +99,6 @@ public class Optimize {
 
 
     public static void printtree(RA_Tree root, boolean a, String text) {
-        List<Select_Node> node = new ArrayList<>();
         if (root != null) {
             if (a)
                 System.out.println(text + root.toString());

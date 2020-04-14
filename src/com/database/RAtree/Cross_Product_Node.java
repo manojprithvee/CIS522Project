@@ -10,44 +10,32 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 
 public class Cross_Product_Node extends RA_Tree {
-    private final Table righttable;
-    private final Table lefttable;
-    private final Table table;
-    private final int size;
     Cross_Product_Iterator iterator;
 
     public Cross_Product_Node(RA_Tree left, RA_Tree right) {
         this.left = left;
         this.right = right;
-        this.righttable = left.get_iterator().getTable();
-        this.lefttable = right.get_iterator().getTable();
-        if (righttable.getAlias() == null) righttable.setAlias(righttable.getName());
-        if (lefttable.getAlias() == null) lefttable.setAlias(lefttable.getName());
         LinkedHashMap<String, Integer> newSchema = new LinkedHashMap<>();
         ArrayList<String> dataType = new ArrayList<>();
         String newTableName = String.valueOf(Shared_Variables.table);
         Shared_Variables.table += 1;
-        this.table = new Table(newTableName, newTableName);
-        this.table.setAlias(newTableName);
-        dataType = create_new_schema(newSchema, lefttable, righttable, dataType);
+        Table table = new Table(newTableName, newTableName);
+        table.setAlias(newTableName);
+        create_new_schema(newSchema, right.getSchema(), left.getSchema(), dataType);
         Shared_Variables.list_tables.put(newTableName, newSchema);
         Shared_Variables.schema_store.put(newTableName, dataType);
-        size = newSchema.size();
-        Shared_Variables.current_schema = (LinkedHashMap<String, Integer>) newSchema.clone();
-        schema = Shared_Variables.current_schema;
+        int size = newSchema.size();
+        schema = newSchema;
     }
 
-    ArrayList<String> create_new_schema(HashMap<String, Integer> newSchema, Table lefttable, Table righttable, ArrayList<String> dataType) {
-        LinkedHashMap<String, Integer> oldschema = Shared_Variables.list_tables.get(lefttable.getAlias());
-        dataType.addAll(Shared_Variables.schema_store.get(lefttable.getName()));
+    ArrayList<String> create_new_schema(HashMap<String, Integer> newSchema, LinkedHashMap<String, Integer> leftSchema, LinkedHashMap<String, Integer> rightSchema, ArrayList<String> dataType) {
+        LinkedHashMap<String, Integer> oldschema = leftSchema;
         int sizes = 0;
         for (String col : oldschema.keySet()) {
             newSchema.put(col, oldschema.get(col) + sizes);
         }
         sizes = newSchema.size();
-        oldschema = Shared_Variables.list_tables.get(righttable.getAlias());
-//        System.out.println(oldschema);
-        dataType.addAll(Shared_Variables.schema_store.get(righttable.getName()));
+        oldschema = rightSchema;
         for (String col : oldschema.keySet()) {
             newSchema.put(col, oldschema.get(col) + sizes);
         }
@@ -58,15 +46,14 @@ public class Cross_Product_Node extends RA_Tree {
         iterator = new Cross_Product_Iterator(
                 left,
                 right);
-//        schema = Shared_Variables.current_schema;
         return iterator;
     }
 
     @Override
     public String toString() {
         return "Cross_Product_Node{" +
-                "lefttable=" + left.get_iterator().getTable().getName() +
-                ", righttable=" + right.get_iterator().getTable().getName() +
+                "lefttable=" + left.getSchema() +
+                ", righttable=" + right.getSchema() +
                 '}';
     }
 }

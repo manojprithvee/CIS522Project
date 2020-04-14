@@ -38,7 +38,6 @@ public class Max_Min extends Aggregator {
                 } catch (SQLException e) {
                     e.printStackTrace();
                 }
-                return output;
             } else {
 //              max
                 try {
@@ -49,8 +48,8 @@ public class Max_Min extends Aggregator {
                 } catch (SQLException e) {
                     e.printStackTrace();
                 }
-                return output;
             }
+            return output;
         } else {
             return new LongValue(0);
         }

@@ -14,14 +14,6 @@ public abstract class RA_Tree {
 
     }
 
-    public static RA_Tree push(RA_Tree tree, DB_Iterator oper) {
-        return null;
-    }
-
-    public static RA_Tree pop(RA_Tree tree, DB_Iterator oper) {
-        return null;
-    }
-
     public RA_Tree getParent() {
         return parent;
     }

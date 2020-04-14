@@ -15,7 +15,6 @@ import java.util.*;
 import static com.database.Shared_Variables.get_index;
 
 public class Grace_Join_Iterator implements DB_Iterator {
-    private final Table righttable, lefttable;
     private final DB_Iterator rightIterator;
     private final List<Column> columnused;
     private final LinkedHashMap<String, Integer> newschama;
@@ -31,12 +30,8 @@ public class Grace_Join_Iterator implements DB_Iterator {
     private Iterator<Object[]> current_group_iterator;
 
 
-    public Grace_Join_Iterator(RA_Tree left, RA_Tree right, Table lefttable, Table righttable,
+    public Grace_Join_Iterator(RA_Tree left, RA_Tree right,
                                BinaryExpression expression) {
-        this.lefttable = left.get_iterator().getTable();
-        this.righttable = right.get_iterator().getTable();
-        if (righttable.getAlias() == null) righttable.setAlias(righttable.getName());
-        if (lefttable.getAlias() == null) lefttable.setAlias(lefttable.getName());
         this.rightIterator = right.get_iterator();
         this.leftIterator = left.get_iterator();
         this.expression = expression;
@@ -48,32 +43,20 @@ public class Grace_Join_Iterator implements DB_Iterator {
         LinkedHashMap<String, Integer> newleftschema = new LinkedHashMap<>();
         int count = 0;
         for (Column c : columnused) {
-            if (c.getTable().getName() == this.lefttable.getName()) {
-                if (!leftcolumn.contains(c)) {
-                    leftcolumn.add(c);
-                    leftindex.add(get_index(c, Shared_Variables.list_tables.get(lefttable.getName())));
-                    newleftschema.put(new Column(this.lefttable, c.getColumnName()).getWholeColumnName(), count);
-                    count++;
-                }
-            } else if (c.getTable().getName() == this.righttable.getName()) {
-                rightcolumn.add(c);
-                rightindex.add(get_index(c, Shared_Variables.list_tables.get(this.righttable.getName())));
-            } else {
-                int index = get_index(c, Shared_Variables.list_tables.get(this.lefttable.getName()));
+            int index = get_index(c, left.getSchema());
                 if (index != Integer.MAX_VALUE) {
                     if (!leftcolumn.contains(c)) {
                         leftcolumn.add(c);
                         leftindex.add(index);
-                        newleftschema.put(new Column(this.lefttable, c.getColumnName()).getWholeColumnName(), count);
+                        newleftschema.put(c.getWholeColumnName(), count);
                         count++;
                     }
                 }
-                index = get_index(c, Shared_Variables.list_tables.get(this.righttable.getName()));
+            index = get_index(c, right.getSchema());
                 if (index != Integer.MAX_VALUE) {
                     rightcolumn.add(c);
                     rightindex.add(index);
                 }
-            }
         }
         newschama = buildschema(newleftschema, right.getSchema());
         Object[] row = this.leftIterator.next();
@@ -92,7 +75,13 @@ public class Grace_Join_Iterator implements DB_Iterator {
         }
         group = map.keySet().iterator();
         eval = new Evaluator(newschama);
-        main(lefttable, righttable);
+        LinkedHashMap<String, Integer> newSchema = new LinkedHashMap<>();
+        ArrayList<String> dataType = new ArrayList<>();
+        create_new_schema(newSchema, right.getSchema(), left.getSchema(), dataType);
+        size = newSchema.size();
+        left.getParent().setSchema(newSchema);
+        Shared_Variables.current_schema = (LinkedHashMap<String, Integer>) newSchema.clone();
+        temp2 = rightIterator.next();
     }
 
     public ArrayList<Object> grouping(Object[] w, Set<Integer> indexes) {
@@ -103,32 +92,15 @@ public class Grace_Join_Iterator implements DB_Iterator {
         return output;
     }
 
-    private void main(Table lefttable, Table righttable) {
-        LinkedHashMap<String, Integer> newSchema = new LinkedHashMap<>();
-        ArrayList<String> dataType = new ArrayList<>();
-        String newTableName = String.valueOf(Shared_Variables.table);
-        Shared_Variables.table += 1;
-        this.table = new Table(newTableName, newTableName);
-        this.table.setAlias(newTableName);
-        dataType = create_new_schema(newSchema, righttable, lefttable, dataType);
-        Shared_Variables.list_tables.put(newTableName, newSchema);
-        Shared_Variables.schema_store.put(newTableName, dataType);
-        temp2 = rightIterator.next();
-        size = newSchema.size();
-        Shared_Variables.current_schema = (LinkedHashMap<String, Integer>) newSchema.clone();
-    }
 
-
-    ArrayList<String> create_new_schema(HashMap<String, Integer> newSchema, Table lefttable, Table righttable, ArrayList<String> dataType) {
-        LinkedHashMap<String, Integer> oldschema = Shared_Variables.list_tables.get(lefttable.getAlias());
-        dataType.addAll(Shared_Variables.schema_store.get(lefttable.getName()));
+    ArrayList<String> create_new_schema(HashMap<String, Integer> newSchema, LinkedHashMap<String, Integer> leftSchema, LinkedHashMap<String, Integer> rightSchema, ArrayList<String> dataType) {
+        LinkedHashMap<String, Integer> oldschema = leftSchema;
         int sizes = 0;
         for (String col : oldschema.keySet()) {
             newSchema.put(col, oldschema.get(col) + sizes);
         }
         sizes = newSchema.size();
-        oldschema = Shared_Variables.list_tables.get(righttable.getAlias());
-        dataType.addAll(Shared_Variables.schema_store.get(righttable.getName()));
+        oldschema = rightSchema;
         for (String col : oldschema.keySet()) {
             newSchema.put(col, oldschema.get(col) + sizes);
         }
@@ -149,7 +121,7 @@ public class Grace_Join_Iterator implements DB_Iterator {
     }
 
     public Object[] create_row(Object[] left, Object[] right, int size) {
-        Object[] new_row = new Object[size];
+        Object[] new_row = new Object[left.length + right.length];
         int index = 0;
         if (left == null || right == null) return null;
         for (Object o : left) {

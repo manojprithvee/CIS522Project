@@ -4,7 +4,6 @@ import com.database.RAtree.RA_Tree;
 import com.database.Shared_Variables;
 import com.database.helpers.DB_Iterator;
 import net.sf.jsqlparser.expression.StringValue;
-import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.StatementVisitor;
 import net.sf.jsqlparser.statement.create.table.ColumnDefinition;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
@@ -12,7 +11,7 @@ import net.sf.jsqlparser.statement.delete.Delete;
 import net.sf.jsqlparser.statement.drop.Drop;
 import net.sf.jsqlparser.statement.insert.Insert;
 import net.sf.jsqlparser.statement.replace.Replace;
-import net.sf.jsqlparser.statement.select.*;
+import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.truncate.Truncate;
 import net.sf.jsqlparser.statement.update.Update;
 
@@ -21,42 +20,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 
 public class Sql_Parse implements StatementVisitor {
-
-    public static void managetablerenaming(Table t) {
-        if (t.getAlias() == null) {
-            t.setAlias(t.getName());
-        }
-
-        if (!Shared_Variables.list_tables.containsKey(t.getAlias())) {
-            LinkedHashMap<String, Integer> tempSchema = Shared_Variables.list_tables.get(t.getName());
-            LinkedHashMap<String, Integer> newSchema = new LinkedHashMap<>();
-            for (String key : tempSchema.keySet()) {
-                String[] temp = key.split("\\.");
-                newSchema.put(t.getAlias() + "." + temp[1], tempSchema.get(key));
-            }
-            Shared_Variables.current_schema = newSchema;
-            Shared_Variables.list_tables.put(t.getAlias(), newSchema);
-        }
-    }
-
-    public static void createSchema(List<SelectItem> selectItems, Table t, FromItem fromItem) {
-        LinkedHashMap<String, Integer> schema = new LinkedHashMap<>();
-        if ((selectItems.get(0) instanceof AllColumns) || (selectItems.get(0) instanceof AllTableColumns)) {
-            Table table = (Table) fromItem;
-            schema = (Shared_Variables.list_tables.get(table.getName()));
-        } else {
-            for (int i = 0; i < selectItems.size(); i++) {
-                SelectExpressionItem abc = (SelectExpressionItem) selectItems.get(i);
-                if (abc.getAlias() != null) {
-                    schema.put(abc.getAlias(), i);
-                } else {
-                    schema.put(abc.getExpression().toString(), i);
-                }
-            }
-        }
-        Shared_Variables.current_schema = schema;
-        Shared_Variables.list_tables.put(t.getAlias(), schema);
-    }
 
     public static void print(DB_Iterator input) {
         Object[] row = input.next();
@@ -84,8 +47,13 @@ public class Sql_Parse implements StatementVisitor {
     @Override
     public void visit(Select select) {
         System.out.println(select);
+        Get_Columns extractor = new Get_Columns();
+        select.getSelectBody().accept(extractor);
+        System.out.println(extractor.columns);
+        System.out.println(select);
         Build_Tree treeBuilder = new Build_Tree(select.getSelectBody());
         RA_Tree root = treeBuilder.getRoot();
+        Optimize.selectionpushdown(root, extractor.columns);
         print(root.get_iterator());
     }
 

@@ -1,6 +1,5 @@
 package com.database;
 
-import com.database.helpers.DB_Iterator;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.schema.Column;
 
@@ -14,7 +13,6 @@ public class Shared_Variables {
     public static final HashMap<String, ArrayList<String>> schema_store = new HashMap<>();
     public static final HashMap<String, LinkedHashMap<String, Integer>> list_tables = new HashMap<>();
     public static LinkedHashMap<String, Integer> current_schema = new LinkedHashMap<String, Integer>();
-    public static ArrayList<String> column_used = new ArrayList<>();
     public static int table = 0;
     public static File table_location = new File("data/");
     public static HashMap<String, Expression> rename = new HashMap<>();
@@ -43,22 +41,5 @@ public class Shared_Variables {
             if (x.equals(columnName)) id = structure.get(column);
         }
         return id;
-    }
-
-    public static HashMap<Object, ArrayList<Object[]>> make_index(int index, DB_Iterator iterator) {
-        HashMap<Object, ArrayList<Object[]>> map = new HashMap<>();
-        Object[] row = iterator.next();
-        while (row != null) {
-            ArrayList<Object[]> a = null;
-            if (map.containsKey(row[index])) {
-                a = map.get(row[index]);
-                a.add(row);
-            } else {
-                a = new ArrayList<>();
-                a.add(row);
-            }
-            map.put(row[index], a);
-        }
-        return map;
     }
 }

@@ -1,6 +1,5 @@
 package com.database.RAtree;
 
-import com.database.Shared_Variables;
 import com.database.helpers.DB_Iterator;
 import com.database.helpers.Order_By_Iterator;
 import net.sf.jsqlparser.schema.Table;
@@ -12,10 +11,11 @@ public class Order_By_Node extends RA_Tree {
     private final List<OrderByElement> orderByElements;
     private final Table table;
 
-    public Order_By_Node(List<OrderByElement> orderByElements, Table t) {
+    public Order_By_Node(RA_Tree left, List<OrderByElement> orderByElements, Table t) {
         super();
+        this.left = left;
         this.orderByElements = orderByElements;
-        schema = Shared_Variables.current_schema;
+        schema = left.getSchema();
         table = t;
     }
 

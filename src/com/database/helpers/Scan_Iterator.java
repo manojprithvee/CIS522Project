@@ -22,30 +22,20 @@ import java.util.List;
 public class Scan_Iterator implements DB_Iterator {
     final Table table;
     private final boolean full;
+    private final LinkedHashMap<String, Integer> newschema;
     File file;
     BufferedReader br = null;
     Iterator scan = null;
     LinkedHashMap<String, Integer> schema;
     private List<CSVRecord> data;
 
-    public Scan_Iterator(File f, Table table, boolean full) {
+    public Scan_Iterator(File f, Table table, boolean full, LinkedHashMap<String, Integer> schema) {
         this.file = f;
         this.table = table;
         this.full = full;
+        this.schema = Shared_Variables.list_tables.get(table.getName().toUpperCase());
+        this.newschema = schema;
         reset();
-        schema = Shared_Variables.list_tables.get(table.getName().toUpperCase());
-        Shared_Variables.current_schema = Shared_Variables.list_tables.get(table.getName().toUpperCase());
-        if (table.getAlias() != null) {
-            LinkedHashMap<String, Integer> tempschema = new LinkedHashMap<>();
-            var count = 0;
-            for (var i : Shared_Variables.current_schema.keySet()) {
-                String column = i;
-                String x = column.substring(column.indexOf(".") + 1);
-                tempschema.put(table.getAlias().toUpperCase() + "." + x, count);
-                count++;
-            }
-            Shared_Variables.list_tables.put(table.getAlias().toUpperCase(), tempschema);
-        }
     }
 
     @Override
@@ -71,15 +61,16 @@ public class Scan_Iterator implements DB_Iterator {
         if (!scan.hasNext())
             return null;
         CSVRecord line = (CSVRecord) scan.next();
-
+//        System.out.println(line);
         if (line == null)
             return null;
         Object[] row;
         ArrayList<String> dataType;
-        row = new Object[line.size()];
+
         dataType = Shared_Variables.schema_store.get(table.getName().toUpperCase());
+        row = new Object[dataType.size()];
         int i = 0;
-        while (i < line.size()) {
+        while (i < dataType.size()) {
             if ("INT".equals(dataType.get(i).toUpperCase())) {
                 row[i] = new LongValue(line.get(i));
             } else if ("DECIMAL".equals(dataType.get(i).toUpperCase()) || "DOUBLE".equals(dataType.get(i).toUpperCase())) {

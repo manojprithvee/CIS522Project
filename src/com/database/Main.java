@@ -17,7 +17,7 @@ public class Main {
                 Shared_Variables.table_location = new File(args[1]);
                 FileInputStream fis = new FileInputStream(file);
                 byte[] data = new byte[(int) file.length()];
-                int read = fis.read(data);
+                fis.read(data);
                 fis.close();
                 str = new String(data, StandardCharsets.UTF_8);
                 String[] arrOfStr = str.split(";");

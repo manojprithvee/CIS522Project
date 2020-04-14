@@ -1,6 +1,5 @@
 package com.database.helpers;
 
-import com.database.Shared_Variables;
 import com.database.aggregators.Aggregator;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.Function;
@@ -16,11 +15,10 @@ public class Aggregate_Iterator implements DB_Iterator {
     private final LinkedHashMap<String, Integer> lastschema;
     boolean output = true;
 
-    public Aggregate_Iterator(DB_Iterator oper, ArrayList<Expression> aggregator, LinkedHashMap<String, Integer> new_schema) {
+    public Aggregate_Iterator(DB_Iterator oper, ArrayList<Expression> aggregator, LinkedHashMap<String, Integer> new_schema, LinkedHashMap<String, Integer> lastschema) {
         this.oper = oper;
         this.aggregator = aggregator;
-        this.lastschema = Shared_Variables.current_schema;
-        Shared_Variables.current_schema = new_schema;
+        this.lastschema = lastschema;
     }
 
     @Override

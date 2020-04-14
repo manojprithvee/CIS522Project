@@ -25,7 +25,7 @@ public class Scan_Node extends RA_Tree {
     @Override
     public Scan_Iterator get_iterator() {
         String tableFile = Shared_Variables.table_location.toString() + File.separator + table.getName().toLowerCase() + ".dat";
-        return new Scan_Iterator(new File(tableFile), table, flag);
+        return new Scan_Iterator(new File(tableFile), table, flag, schema);
     }
 
     @Override

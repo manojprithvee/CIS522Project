@@ -26,8 +26,7 @@ public class Distinct_Iterator implements DB_Iterator {
         Object[] row;
         row = DB_Iterator.next();
 
-        while (true) {
-            if (row == null) break;
+        while (row != null) {
             if (!buffer.contains(Arrays.asList(row))) {
                 buffer.add(Arrays.asList(row));
                 return row;

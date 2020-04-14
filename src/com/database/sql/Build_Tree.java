@@ -12,18 +12,10 @@ import java.util.LinkedHashMap;
 import java.util.List;
 
 public class Build_Tree implements SelectVisitor {
-    private final boolean print;
     private RA_Tree root;
     private LinkedHashMap<String, Integer> schema;
 
     public Build_Tree(SelectBody selectBody) {
-        print = true;
-        selectBody.accept(this);
-
-    }
-
-    public Build_Tree(SelectBody selectBody, boolean print) {
-        this.print = print;
         selectBody.accept(this);
 
     }
@@ -76,46 +68,39 @@ public class Build_Tree implements SelectVisitor {
         RA_Tree output = build_from_joins(plainSelect.getFromItem(), plainSelect.getJoins());
 
         if (plainSelect.getWhere() != null) {
-            RA_Tree selectTree = new Select_Node(plainSelect.getWhere(), t);
+            RA_Tree selectTree = new Select_Node(output, plainSelect.getWhere(), t);
             output.setParent(selectTree);
-            selectTree.setLeft(output);
             output = selectTree;
         }
-        RA_Tree projectTree = new Project_Node(plainSelect, t);
+        RA_Tree projectTree = new Project_Node(output, plainSelect, t);
         output.setParent(projectTree);
-        projectTree.setLeft(output);
         output = projectTree;
 
         if (plainSelect.getHaving() != null) {
-            RA_Tree selectTree = new Select_Node(plainSelect.getHaving(), t);
+            RA_Tree selectTree = new Select_Node(output, plainSelect.getHaving(), t);
             output.setParent(selectTree);
-            selectTree.setLeft(output);
             output = selectTree;
         }
 
         if (plainSelect.getOrderByElements() != null) {
             List<OrderByElement> orderByElements = plainSelect.getOrderByElements();
-            RA_Tree orderByTree = new Order_By_Node(orderByElements, t);
+            RA_Tree orderByTree = new Order_By_Node(output, orderByElements, t);
             output.setParent(orderByTree);
-            orderByTree.setLeft(output);
             output = orderByTree;
         }
 
         if (plainSelect.getDistinct() != null) {
-            RA_Tree distinctTree = new Distinct_Node();
+            RA_Tree distinctTree = new Distinct_Node(output);
             output.setParent(distinctTree);
-            distinctTree.setLeft(output);
             output = distinctTree;
         }
 
         if (plainSelect.getLimit() != null) {
-            RA_Tree limitTree = new Limit_Node(plainSelect.getLimit());
+            RA_Tree limitTree = new Limit_Node(output, plainSelect.getLimit());
             output.setParent(limitTree);
-            limitTree.setLeft(output);
             output = limitTree;
         }
         root = output;
-        Optimize.selectionpushdown(root);
         schema = Shared_Variables.current_schema;
     }
 
@@ -163,21 +148,12 @@ public class Build_Tree implements SelectVisitor {
 
             if (expression != null) {
                 output = new Join_Node(right, left, expression);
-//                output = new Cross_Product_Node(left, right, t, table);
-                left.setParent(output);
-                right.setParent(output);
-                table = output.get_iterator().getTable();
-
-//                RA_Tree select_node = new Select_Node(expression);
-//                output.setParent(select_node);
-//                select_node.setLeft(output);
-//                output = select_node;
             } else {
                 output = new Cross_Product_Node(left, right);
-                left.setParent(output);
-                right.setParent(output);
-                table = output.get_iterator().getTable();
             }
+            left.setParent(output);
+            right.setParent(output);
+            table = output.get_iterator().getTable();
         }
 
         return output;

@@ -1,6 +1,6 @@
 package com.database.helpers;
 
-import com.database.Shared_Variables;
+import com.database.RAtree.RA_Tree;
 import com.database.sql.Evaluator;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.Function;
@@ -11,7 +11,10 @@ import net.sf.jsqlparser.statement.select.SelectExpressionItem;
 import net.sf.jsqlparser.statement.select.SelectItem;
 
 import java.sql.SQLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 
 public class Projection_Iterator implements DB_Iterator {
 
@@ -21,12 +24,11 @@ public class Projection_Iterator implements DB_Iterator {
     ArrayList<SelectItem> to_keep;
     Object[] row;
 
-    public Projection_Iterator(DB_Iterator op, List<SelectItem> p, boolean allColumns, LinkedHashMap<String, Integer> new_schema) {
-        this.op = op;
+    public Projection_Iterator(RA_Tree op, List<SelectItem> p, boolean allColumns) {
+        this.op = op.get_iterator();
         this.row = new Object[p.size()];
         this.to_keep = (ArrayList<SelectItem>) p;
-        this.schema = Shared_Variables.current_schema;
-        Shared_Variables.current_schema = new_schema;
+        this.schema = op.getSchema();
         this.allColumns = allColumns;
     }
 
@@ -38,7 +40,6 @@ public class Projection_Iterator implements DB_Iterator {
 
     @Override
     public Object[] next() {
-
         Object[] temp = op.next();
         Evaluator eval = new Evaluator(schema, temp);
         int index = 0;

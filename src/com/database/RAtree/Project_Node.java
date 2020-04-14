@@ -17,7 +17,6 @@ import net.sf.jsqlparser.statement.select.SelectItem;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
-import java.util.List;
 
 public class Project_Node extends RA_Tree {
     private final ArrayList<Expression> inExpressions = new ArrayList<>();
@@ -29,13 +28,18 @@ public class Project_Node extends RA_Tree {
     LinkedHashMap<String, Integer> new_schema = new LinkedHashMap<>();
     private boolean allColumns = false;
 
-    public Project_Node(PlainSelect plainSelect, Table t) {
+    public Project_Node(RA_Tree left, PlainSelect plainSelect, Table t) {
+        this.left = left;
         this.body = plainSelect;
         this.table = t;
+    }
+
+    @Override
+    public DB_Iterator get_iterator() {
         ArrayList<SelectExpressionItem> items = new ArrayList<>();
-        allColumns = ((plainSelect.getSelectItems().get(0) instanceof AllColumns));
-        for (SelectItem item : plainSelect.getSelectItems()) {
-            items.addAll(new Select_Item_Builder(t, item).getitems());
+        allColumns = ((body.getSelectItems().get(0) instanceof AllColumns));
+        for (SelectItem item : body.getSelectItems()) {
+            items.addAll(new Select_Item_Builder(table, item).getitems());
         }
 
         Table table = new Table(String.valueOf(Shared_Variables.table));
@@ -61,22 +65,16 @@ public class Project_Node extends RA_Tree {
             count++;
         }
         schema = new_schema;
-    }
-
-    @Override
-    public DB_Iterator get_iterator() {
         if (allColumns) return this.getLeft().get_iterator();
-        List<SelectItem> inSchema = null;
-
         if (isattribule && isagg) {
-            return new Group_By_Iterator(left.get_iterator(), body.getSelectItems(), body.getGroupByColumnReferences(), new_schema);
+            return new Group_By_Iterator(left.get_iterator(), body.getSelectItems(), body.getGroupByColumnReferences(), new_schema, left.getSchema());
         } else if (!isattribule && isagg) {
-            return new Aggregate_Iterator(left.get_iterator(), inExpressions, new_schema);
+            return new Aggregate_Iterator(left.get_iterator(), inExpressions, new_schema, left.getSchema());
         } else {
             return new Projection_Iterator(
-                    left.get_iterator(),
+                    left,
                     body.getSelectItems(),
-                    allColumns, new_schema);
+                    allColumns);
         }
     }
 

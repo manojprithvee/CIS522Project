@@ -21,7 +21,7 @@ public class Limit_Iterator implements DB_Iterator {
     @Override
     public Object[] next() {
         Object[] row = op.next();
-        while (row != null && count < limit) {
+        if (row != null && count < limit) {
             count += 1;
             return row;
         }
