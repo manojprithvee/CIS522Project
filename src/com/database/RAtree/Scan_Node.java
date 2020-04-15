@@ -5,6 +5,7 @@ import com.database.helpers.Scan_Iterator;
 import net.sf.jsqlparser.schema.Table;
 
 import java.io.File;
+import java.util.LinkedHashMap;
 
 public class Scan_Node extends RA_Tree {
     private final Table table;
@@ -14,7 +15,16 @@ public class Scan_Node extends RA_Tree {
         super();
         this.table = table;
         this.flag = flag;
-        schema = Shared_Variables.list_tables.get(table.getName().toUpperCase());
+        LinkedHashMap<String, Integer> schemas = Shared_Variables.list_tables.get(table.getWholeTableName().toUpperCase());
+        LinkedHashMap<String, Integer> newSchema = new LinkedHashMap<>();
+        int count = 0;
+        for (String s : Shared_Variables.column_used) {
+            if (schemas.containsKey(s)) {
+                newSchema.put(s, count);
+                count++;
+            }
+        }
+        schema = newSchema;
     }
 
 

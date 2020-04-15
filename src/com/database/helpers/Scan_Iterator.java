@@ -14,15 +14,13 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.List;
+import java.util.*;
 
 public class Scan_Iterator implements DB_Iterator {
     final Table table;
     private final boolean full;
     private final LinkedHashMap<String, Integer> newschema;
+    private final HashMap<Integer, Integer> index;
     File file;
     BufferedReader br = null;
     Iterator scan = null;
@@ -35,6 +33,10 @@ public class Scan_Iterator implements DB_Iterator {
         this.full = full;
         this.schema = Shared_Variables.list_tables.get(table.getName().toUpperCase());
         this.newschema = schema;
+        this.index = new HashMap<Integer, Integer>();
+        for (String name : newschema.keySet())
+            index.put(this.schema.get(name), newschema.get(name));
+        Shared_Variables.current_schema = schema;
         reset();
     }
 
@@ -68,24 +70,28 @@ public class Scan_Iterator implements DB_Iterator {
         ArrayList<String> dataType;
 
         dataType = Shared_Variables.schema_store.get(table.getName().toUpperCase());
-        row = new Object[dataType.size()];
-        int i = 0;
-        while (i < dataType.size()) {
-            if ("INT".equals(dataType.get(i).toUpperCase())) {
-                row[i] = new LongValue(line.get(i));
-            } else if ("DECIMAL".equals(dataType.get(i).toUpperCase()) || "DOUBLE".equals(dataType.get(i).toUpperCase())) {
-                row[i] = new DoubleValue(line.get(i));
-            } else if ("DATE".equals(dataType.get(i).toUpperCase())) {
-                row[i] = new DateValue(line.get(i));
-            } else if ("CHAR".equals(dataType.get(i).toUpperCase()) || "STRING".equals(dataType.get(i).toUpperCase()) || "VARCHAR".equals(dataType.get(i).toUpperCase())) {
-                row[i] = new StringValue(line.get(i));
-            } else {
-                if (dataType.get(i).contains("CHAR")) {
-                    row[i] = new StringValue(line.get(i));
-                }
+        row = new Object[index.size()];
+
+        for (int i = 0; i < schema.size(); i++) {
+            Integer id = index.get(i);
+            if (id == null) continue;
+            switch (dataType.get(i).toUpperCase()) {
+                case "INT":
+                    row[id] = new LongValue(line.get(i));
+                    break;
+                case "DECIMAL":
+                case "DOUBLE":
+                    row[id] = new DoubleValue(line.get(i));
+                    break;
+                case "DATE":
+                    row[id] = new DateValue(line.get(i));
+                    break;
+                default:
+                    row[id] = new StringValue(line.get(i));
+                    break;
             }
-            i++;
         }
+//        System.out.println(Arrays.deepToString(row));
         return row;
 
     }

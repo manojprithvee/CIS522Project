@@ -20,7 +20,8 @@ public class Average extends Aggregator {
     public PrimitiveValue get_results(Object[] row) {
         evaluator.setTuple(row);
         try {
-            return evaluator.eval(new Division(new Sum(expression, schema).get_results(row), new Count(expression, schema).get_results(row)));
+            output = evaluator.eval(new Division(new Sum(expression, schema).get_results(row), new Count(expression, schema).get_results(row)));
+            return output;
         } catch (SQLException e) {
             e.printStackTrace();
         }

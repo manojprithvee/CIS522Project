@@ -2,6 +2,7 @@ package com.database.sql;
 
 import com.database.RAtree.*;
 import com.database.Shared_Variables;
+import net.sf.jsqlparser.expression.BinaryExpression;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.select.*;
@@ -21,8 +22,6 @@ public class Build_Tree implements SelectVisitor {
     }
 
     public static void manage_renaming(SelectBody body) {
-
-
         ArrayList<SelectItem> selectItems = (ArrayList<SelectItem>) ((PlainSelect) body).getSelectItems();
         Shared_Variables.rename = new HashMap<>();
         for (SelectItem a : selectItems) {
@@ -147,7 +146,7 @@ public class Build_Tree implements SelectVisitor {
 
 
             if (expression != null) {
-                output = new Join_Node(right, left, expression);
+                output = new Join_Node(right, left, (BinaryExpression) expression);
             } else {
                 output = new Cross_Product_Node(left, right);
             }

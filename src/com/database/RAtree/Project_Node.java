@@ -67,7 +67,7 @@ public class Project_Node extends RA_Tree {
         schema = new_schema;
         if (allColumns) return this.getLeft().get_iterator();
         if (isattribule && isagg) {
-            return new Group_By_Iterator(left.get_iterator(), body.getSelectItems(), body.getGroupByColumnReferences(), new_schema, left.getSchema());
+            return new Group_By_Iterator(left.get_iterator(), inExpressions, left.getSchema());
         } else if (!isattribule && isagg) {
             return new Aggregate_Iterator(left.get_iterator(), inExpressions, new_schema, left.getSchema());
         } else {

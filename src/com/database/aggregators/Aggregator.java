@@ -11,6 +11,7 @@ public abstract class Aggregator {
 
     protected final Expression expression;
     protected Evaluator evaluator;
+    public PrimitiveValue output;
 
 
     public Aggregator(Expression e, LinkedHashMap<String, Integer> schema) {

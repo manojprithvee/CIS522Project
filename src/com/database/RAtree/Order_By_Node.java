@@ -20,7 +20,7 @@ public class Order_By_Node extends RA_Tree {
     }
 
     public DB_Iterator get_iterator() {
-        return new Order_By_Iterator(left.get_iterator(), orderByElements);
+        return new Order_By_Iterator(left, orderByElements);
     }
 
     @Override

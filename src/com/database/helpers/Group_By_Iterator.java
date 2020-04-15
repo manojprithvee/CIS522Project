@@ -2,119 +2,95 @@ package com.database.helpers;
 
 import com.database.aggregators.Aggregator;
 import com.database.sql.Evaluator;
+import com.database.sql.Storage;
+import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.Function;
-import net.sf.jsqlparser.expression.PrimitiveValue;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
-import net.sf.jsqlparser.statement.select.SelectExpressionItem;
-import net.sf.jsqlparser.statement.select.SelectItem;
 
 import java.sql.SQLException;
 import java.util.*;
-import java.util.stream.Collectors;
+
 
 public class Group_By_Iterator implements DB_Iterator {
+    private final LinkedHashMap<String, Integer> inSchema;
+    private final ArrayList<Expression> outExpressions;
+    private final DB_Iterator iterator;
+    private final Evaluator evaluator;
+    private HashMap<List<Object>, ArrayList<Storage>> buffer;
 
-    private final ArrayList<Integer> indexes;
-    private final Map<List<Object>, List<Object[]>> bufferHash;
-    private final Iterator<List<Object>> bufferHashitrator;
-    private final LinkedHashMap<String, Integer> newschema;
-    private final List<SelectItem> list;
-    private final LinkedHashMap<String, Integer> new_schema;
-
-
-    public Group_By_Iterator(DB_Iterator oper, List<SelectItem> list, List<Column> groupByColumnReferences, LinkedHashMap<String, Integer> new_schema, LinkedHashMap<String, Integer> lastschema) {
-
-        this.list = list;
-        this.new_schema = new_schema;
-        ArrayList<Object[]> buffer = new ArrayList<Object[]>();
-//        schema = Shared_Variables.list_tables.get(table.getAlias());
-
-        Object[] row = oper.next();
-        while (row != null) {
-            buffer.add(row);
-            row = oper.next();
-        }
-
-        this.indexes = new ArrayList<Integer>();
-        newschema = new LinkedHashMap<>();
-        int count = 0;
-
-        //getting all the index for the group by elements in the table
-        for (Column column : groupByColumnReferences) {
-            int index = 0;
-            String column_name = "";
-            if (lastschema.get(column.getWholeColumnName()) != null) {
-                column_name = column.getWholeColumnName();
-                index = lastschema.get(column.getWholeColumnName());
-            } else {
-                for (var columnname : lastschema.keySet()) {
-                    String x = columnname.substring(columnname.indexOf(".") + 1);
-                    if (x.equals(column.getColumnName())) {
-                        column_name = columnname;
-                        index = lastschema.get(columnname);
-                    }
-                }
-            }
-            newschema.put(column_name, count);
-            count += 1;
-            indexes.add(index);
-        }
-
-        bufferHash = buffer.stream().collect(Collectors.groupingBy(w -> grouping(w)));
-        ArrayList<Double> function_results = new ArrayList<>();
-        bufferHashitrator = bufferHash.keySet().iterator();
-    }
-
-    public List<Object> grouping(Object[] w) {
-        ArrayList<Object> output = new ArrayList<Object>();
-        for (Integer index : indexes) {
-            output.add(w[index]);
-        }
-        return output;
-    }
-
-    @Override
-    public void reset() {
-
+    public Group_By_Iterator(DB_Iterator iterator,
+                             ArrayList<Expression> outExpressions,
+                             LinkedHashMap<String, Integer> inSchema) {
+        this.iterator = iterator;
+        this.outExpressions = outExpressions;
+        this.inSchema = inSchema;
+        evaluator = new Evaluator(inSchema);
+        reset();
     }
 
     @Override
     public Object[] next() {
-        List<Object> group;
-
-        if (bufferHashitrator.hasNext()) {
-            group = bufferHashitrator.next();
-            Object[] result = new Object[list.size()];
-            int count = 0;
-
-            for (SelectItem f : list) {
-                if (((SelectExpressionItem) f).getExpression() instanceof Function) {
-                    Function function = (Function) ((SelectExpressionItem) f).getExpression();
-                    Aggregator abc = Aggregator.get_agg(function, new_schema);
-                    PrimitiveValue output = null;
-                    for (var tuple : bufferHash.get(group)) {
-                        output = abc.get_results(tuple);
-                    }
-                    result[count] = output;
-                } else {
-                    Evaluator eval = new Evaluator(newschema, group.toArray());
-                    try {
-                        result[count] = eval.eval(((SelectExpressionItem) f).getExpression());
-                    } catch (SQLException e) {
-                        e.printStackTrace();
-                    }
-                }
-                count++;
-            }
-            return result;
-        } else
+        if (buffer == null) return null;
+        if (buffer.isEmpty()) {
+            buffer = null;
             return null;
-    }
+        } else {
+            List<Object> row = buffer.keySet().iterator().next();
+            ArrayList<Storage> pairs = buffer.get(row);
+            buffer.remove(row);
 
+            for (Storage pair : pairs) {
+                row.set(pair.id, pair.function.output);
+            }
+            return row.toArray();
+        }
+    }
 
     @Override
     public Table getTable() {
         return null;
+    }
+
+    @Override
+    public void reset() {
+        if (buffer != null) return;
+        buffer = new HashMap<>();
+        Object[] inRow = this.iterator.next();
+        while (inRow != null) {
+            List<Object> outRow = Arrays.asList(new Object[outExpressions.size()]);
+            ArrayList<Integer> indexes = new ArrayList<>();
+            evaluator.setTuple(inRow);
+
+            for (int i = 0; i < outExpressions.size(); i++) {
+                if (outExpressions.get(i) instanceof Column) {
+                    try {
+                        outRow.set(i, evaluator.eval(outExpressions.get(i)));
+                    } catch (SQLException e) {
+                        e.printStackTrace();
+                    }
+                } else {
+                    indexes.add(i);
+                }
+            }
+            if (buffer.containsKey(outRow)) {
+                for (Storage pair : buffer.get(outRow))
+                    pair.function.get_results(inRow);
+                inRow = this.iterator.next();
+                continue;
+            }
+
+            ArrayList<Storage> pairs = new ArrayList<Storage>();
+
+            for (Integer i : indexes) {
+                Aggregator aggregate = Aggregator.get_agg((Function) outExpressions.get(i), inSchema);
+                aggregate.get_results(inRow);
+                Storage pair = new Storage(i, aggregate);
+                pairs.add(pair);
+            }
+
+            buffer.put(outRow, pairs);
+            inRow = this.iterator.next();
+        }
     }
 }

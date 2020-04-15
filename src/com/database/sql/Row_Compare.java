@@ -1,6 +1,5 @@
 package com.database.sql;
 
-import com.database.Shared_Variables;
 import net.sf.jsqlparser.expression.*;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
@@ -13,35 +12,23 @@ import java.util.LinkedHashMap;
 
 
 public class Row_Compare implements Comparator<Object[]> {
+    private final LinkedHashMap<String, Integer> schema;
     OrderByElement orderByElement;
     Table table;
 
-    public Row_Compare(OrderByElement orderByElement, Table table) {
+    public Row_Compare(OrderByElement orderByElement, Table table, LinkedHashMap<String, Integer> schema) {
         this.orderByElement = orderByElement;
         this.table = table;
+        this.schema = schema;
     }
 
     @Override
     public int compare(Object[] o1, Object[] o2) {
-        LinkedHashMap<String, Integer> schema = Shared_Variables.current_schema;
         Evaluator eval1 = new Evaluator(schema, o1);
         PrimitiveValue left = eval1.eval((Column) orderByElement.getExpression());
         eval1.setTuple(o2);
         PrimitiveValue right = eval1.eval((Column) orderByElement.getExpression());
         int sortDirection = (orderByElement.isAsc()) ? 1 : -1;
-//        int index = 0;
-//        if (schema.get(column.getWholeColumnName()) != null) {
-//            index = schema.get(column.getWholeColumnName());
-//        } else if (schema.get(table.getAlias() + "." + column.getWholeColumnName()) != null) {
-//            index = schema.get(table.getAlias() + "." + column.getWholeColumnName());
-//        } else {
-//            for (var columnname : schema.keySet()) {
-//                String x = columnname.substring(columnname.indexOf(".") + 1);
-//                if (x.equals(column.getColumnName())) index = schema.get(columnname);
-//            }
-//        }
-//        PrimitiveValue left = (PrimitiveValue) o1[index];
-//        PrimitiveValue right = (PrimitiveValue) o2[index];
         try {
             if (left instanceof StringValue) return left.toString().compareTo(right.toString()) * sortDirection;
             if (left instanceof DoubleValue) return (int) ((left.toDouble() - right.toDouble()) * sortDirection);

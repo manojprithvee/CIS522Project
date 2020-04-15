@@ -11,7 +11,6 @@ import java.util.LinkedHashMap;
 
 public class Max_Min extends Aggregator {
     private final int i;
-    private PrimitiveValue output;
 
     public Max_Min(Expression expression, int i, LinkedHashMap<String, Integer> schema) {
         super(expression, schema);

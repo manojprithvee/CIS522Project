@@ -27,7 +27,12 @@ public class Main {
                         CCJSqlParser parser = new CCJSqlParser(input);
                         try {
                             Statement stmt = parser.Statement();
+                            long startTime = System.currentTimeMillis();
                             stmt.accept(new Sql_Parse());
+                            long stopTime = System.currentTimeMillis();
+                            System.out.println(stopTime - startTime);
+
+
                         } catch (Exception e) {
                             System.out.println("SQL syntax error"); //$NON-NLS-1$
                             e.printStackTrace();

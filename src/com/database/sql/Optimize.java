@@ -1,8 +1,12 @@
 package com.database.sql;
 
-import com.database.RAtree.*;
+import com.database.RAtree.Cross_Product_Node;
+import com.database.RAtree.Join_Node;
+import com.database.RAtree.RA_Tree;
+import com.database.RAtree.Select_Node;
 import com.database.Shared_Variables;
 import net.sf.jsqlparser.expression.BinaryExpression;
+import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
 import net.sf.jsqlparser.expression.operators.conditional.OrExpression;
 import net.sf.jsqlparser.expression.operators.relational.EqualsTo;
@@ -11,7 +15,7 @@ import net.sf.jsqlparser.schema.Column;
 import java.util.*;
 
 public class Optimize {
-    public static void selectionpushdown(RA_Tree abc, Set<String> columns) {
+    public static void selectionpushdown(RA_Tree abc) {
         List<RA_Tree> selectNodes = Optimize.getnodes(abc, Select_Node.class);
         for (RA_Tree node : selectNodes) {
             Select_Node select = (Select_Node) node;
@@ -44,25 +48,11 @@ public class Optimize {
             popNode(selectnode);
             popNode(node);
             RA_Tree parent = node.getLeft().getParent();
-            Join_Node join = new Join_Node(node.getLeft(), node.getRight(), selectnode.where);
+            Join_Node join = new Join_Node(node.getLeft(), node.getRight(), (BinaryExpression) selectnode.where);
             join.setParent(parent);
             pushNode(join, join.getParent(), join.getLeft(), join.getRight());
         }
-        List<RA_Tree> scans = Optimize.getnodes(abc, Scan_Node.class);
-        for (RA_Tree node : scans) {
-            Scan_Node table = (Scan_Node) node;
-            LinkedHashMap<String, Integer> schema = Shared_Variables.list_tables.get(table.getTable().getWholeTableName().toUpperCase());
-            LinkedHashMap<String, Integer> newSchema = new LinkedHashMap<>();
-            int count = 0;
-            for (String s : columns) {
-                if (schema.containsKey(s)) {
-                    newSchema.put(s, count);
-                    count++;
-                }
-            }
-            System.out.println(newSchema);
-            table.setSchema(newSchema);
-        }
+
     }
 
     public static void popNode(RA_Tree node) {
@@ -165,17 +155,17 @@ public class Optimize {
         return lowest;
     }
 
-    public static List<BinaryExpression> splitconditions(BinaryExpression where) {
+    public static List<BinaryExpression> splitconditions(Expression where) {
         List<BinaryExpression> list = new ArrayList<>();
 //        System.out.println(where);
         if (where instanceof OrExpression) {
-            list.add(where);
+            list.add((BinaryExpression) where);
         } else if (where instanceof AndExpression) {
-            list.addAll(splitconditions((BinaryExpression) where.getLeftExpression()));
-            list.addAll(splitconditions((BinaryExpression) where.getRightExpression()));
+            list.addAll(splitconditions(((BinaryExpression) where).getLeftExpression()));
+            list.addAll(splitconditions(((BinaryExpression) where).getRightExpression()));
         } else if (where instanceof BinaryExpression) {
-            if ((where.getLeftExpression() instanceof Column) || (where.getRightExpression() instanceof Column)) {
-                list.add(where);
+            if ((((BinaryExpression) where).getLeftExpression() instanceof Column) || (((BinaryExpression) where).getRightExpression() instanceof Column)) {
+                list.add((BinaryExpression) where);
             }
         }
         return (list);

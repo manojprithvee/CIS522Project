@@ -9,8 +9,6 @@ import java.sql.SQLException;
 import java.util.LinkedHashMap;
 
 public class Sum extends Aggregator {
-    PrimitiveValue output = null;
-
     public Sum(Expression expression, LinkedHashMap<String, Integer> schema) {
         super(expression, schema);
     }

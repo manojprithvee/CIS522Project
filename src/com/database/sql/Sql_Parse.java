@@ -44,17 +44,20 @@ public class Sql_Parse implements StatementVisitor {
         }
     }
 
+
     @Override
     public void visit(Select select) {
-        System.out.println(select);
-        Get_Columns extractor = new Get_Columns();
+//        System.out.println(select);
+        Get_Columns extractor = new Get_Columns(select.getSelectBody());
         select.getSelectBody().accept(extractor);
-        System.out.println(extractor.columns);
-        System.out.println(select);
+//        System.out.println(extractor.columns);
+//        System.out.println(select);
+        Shared_Variables.column_used = extractor.columns;
         Build_Tree treeBuilder = new Build_Tree(select.getSelectBody());
         RA_Tree root = treeBuilder.getRoot();
-        Optimize.selectionpushdown(root, extractor.columns);
+        Optimize.selectionpushdown(root);
         print(root.get_iterator());
+        System.out.println("=");
     }
 
     @Override

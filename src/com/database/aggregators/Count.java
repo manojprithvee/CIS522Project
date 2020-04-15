@@ -20,6 +20,7 @@ public class Count extends Aggregator {
             evaluator.setTuple(row);
             if (count == null) return new LongValue(1);
             try {
+                output = evaluator.eval(new Addition(count, new LongValue(1)));
                 count = evaluator.eval(new Addition(count, new LongValue(1)));
             } catch (SQLException e) {
                 e.printStackTrace();

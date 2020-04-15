@@ -20,6 +20,10 @@ public class Evaluator extends Eval {
         this.row = row;
     }
 
+    public HashMap<String, Integer> getStructure() {
+        return structure;
+    }
+
     public Evaluator(LinkedHashMap<String, Integer> schema) {
         this.structure = schema;
     }
@@ -31,6 +35,7 @@ public class Evaluator extends Eval {
     public PrimitiveValue eval(Column main_column) {
         String table;
         int id = 0;
+
         if ((main_column.getTable() != null) && (main_column.getTable().getName() != null)) {
             table = main_column.getTable().getName();
             if (!structure.containsKey(table + "." + main_column.getColumnName()))
