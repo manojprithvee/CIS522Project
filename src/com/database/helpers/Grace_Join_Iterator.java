@@ -11,11 +11,9 @@ public class Grace_Join_Iterator implements DB_Iterator {
     private final Integer leftIndex, rightIndex;
     DB_Iterator leftIterator;
     Object current_group;
-    private String type = "NONE";
     private Table table;
     private Object[] temp2;
     private int size;
-    private Iterator<Object> group;
     private Iterator<Object[]> current_group_iterator;
 
 
@@ -24,11 +22,11 @@ public class Grace_Join_Iterator implements DB_Iterator {
         this.rightIterator = right.get_iterator();
         this.leftIterator = left.get_iterator();
         Object[] row = this.leftIterator.next();
-        this.rightIndex = rightindex;
-        this.leftIndex = leftindex;
+        rightIndex = rightindex;
+        leftIndex = leftindex;
         map = new HashMap<>();
         while (row != null) {
-            Object key = row[leftindex];
+            Object key = row[leftIndex];
             ArrayList<Object[]> abc;
             if (map.containsKey(key)) {
                 abc = map.get(key);
