@@ -25,7 +25,7 @@ public class Grace_Join_Iterator implements DB_Iterator {
         this.leftIterator = left.get_iterator();
         Object[] row = this.leftIterator.next();
         this.rightIndex = rightindex;
-        this.leftIndex = rightindex;
+        this.leftIndex = leftindex;
         map = new HashMap<>();
         while (row != null) {
             Object key = row[leftindex];
@@ -40,28 +40,6 @@ public class Grace_Join_Iterator implements DB_Iterator {
             row = this.leftIterator.next();
         }
         temp2 = rightIterator.next();
-    }
-
-    public ArrayList<Object> grouping(Object[] w, Set<Integer> indexes) {
-        ArrayList<Object> output = new ArrayList<Object>();
-        for (Integer index : indexes) {
-            output.add(w[index]);
-        }
-        return output;
-    }
-
-
-    public void create_new_schema(HashMap<String, Integer> newSchema, LinkedHashMap<String, Integer> leftSchema, LinkedHashMap<String, Integer> rightSchema, ArrayList<String> dataType) {
-        LinkedHashMap<String, Integer> oldschema = leftSchema;
-        int sizes = 0;
-        for (String col : oldschema.keySet()) {
-            newSchema.put(col, oldschema.get(col) + sizes);
-        }
-        sizes = newSchema.size();
-        oldschema = rightSchema;
-        for (String col : oldschema.keySet()) {
-            newSchema.put(col, oldschema.get(col) + sizes);
-        }
     }
 
     public Object[] create_row(Object[] left, Object[] right, int size) {
