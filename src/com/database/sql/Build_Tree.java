@@ -152,7 +152,6 @@ public class Build_Tree implements SelectVisitor {
             }
             left.setParent(output);
             right.setParent(output);
-            table = output.get_iterator().getTable();
         }
 
         return output;

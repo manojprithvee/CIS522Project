@@ -8,8 +8,8 @@ import com.database.Shared_Variables;
 import net.sf.jsqlparser.expression.BinaryExpression;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
-import net.sf.jsqlparser.expression.operators.conditional.OrExpression;
 import net.sf.jsqlparser.expression.operators.relational.EqualsTo;
+import net.sf.jsqlparser.expression.operators.relational.InExpression;
 import net.sf.jsqlparser.schema.Column;
 
 import java.util.*;
@@ -17,11 +17,12 @@ import java.util.*;
 public class Optimize {
     public static void selectionpushdown(RA_Tree abc) {
         List<RA_Tree> selectNodes = Optimize.getnodes(abc, Select_Node.class);
+//        printtree(abc, true, "");
         for (RA_Tree node : selectNodes) {
             Select_Node select = (Select_Node) node;
             if (select.where instanceof BinaryExpression) {
                 BinaryExpression where = (BinaryExpression) select.where;
-                for (BinaryExpression expression : splitconditions(where)) {
+                for (Expression expression : splitconditions(where)) {
                     List<Column> column_used = getcolumnused(expression);
                     RA_Tree lowestChild = getLowestChild(select.getLeft(), column_used);
                     Select_Node new_select = new Select_Node(lowestChild, expression, lowestChild.get_iterator().getTable());
@@ -45,39 +46,32 @@ public class Optimize {
             if (!(node instanceof Cross_Product_Node)) continue;
             Select_Node selectnode = getSelectParent(node.getParent());
             if (selectnode == null) continue;
-            popNode(selectnode);
-            popNode(node);
-            RA_Tree parent = node.getLeft().getParent();
+            RA_Tree parent = selectnode.getParent();
+            RA_Tree child = selectnode.getLeft();
+            if (parent != null) {
+                if (parent.getLeft() == selectnode) parent.setLeft(child);
+                else parent.setRight(child);
+            }
+            if (child != null) child.setParent(parent);
+            parent = node.getParent();
+            child = node.getLeft();
+            if (parent != null) {
+                if (parent.getLeft() == node) parent.setLeft(child);
+                else parent.setRight(child);
+            }
+            if (child != null) child.setParent(parent);
+            parent = node.getLeft().getParent();
             Join_Node join = new Join_Node(node.getLeft(), node.getRight(), (BinaryExpression) selectnode.where);
             join.setParent(parent);
-            pushNode(join, join.getParent(), join.getLeft(), join.getRight());
+            if (join.getParent() != null) {
+                if (join.getParent().getLeft() == join.getLeft()) join.getParent().setLeft(join);
+                else join.getParent().setRight(join);
+            }
+            if (join.getLeft() != null) join.getLeft().setParent(join);
+            if (join.getRight() != null) join.getRight().setParent(join);
         }
+//        printtree(abc, true, "");
 
-    }
-
-    public static void popNode(RA_Tree node) {
-        RA_Tree parent = node.getParent();
-        RA_Tree child = node.getLeft();
-
-        if (parent != null) {
-            if (parent.getLeft() == node) parent.setLeft(child);
-            else parent.setRight(child);
-        }
-        if (child != null) child.setParent(parent);
-    }
-
-    public static void pushNode(RA_Tree node, RA_Tree parent, RA_Tree left, RA_Tree right) {
-        if (parent != null) {
-            if (parent.getLeft() == left) parent.setLeft(node);
-            else parent.setRight(node);
-        }
-
-        if (left != null) left.setParent(node);
-        if (right != null) right.setParent(node);
-
-        node.setParent(parent);
-        node.setLeft(left);
-        node.setRight(right);
     }
 
     public static Select_Node getSelectParent(RA_Tree parent) {
@@ -113,22 +107,34 @@ public class Optimize {
         return node;
     }
 
-    public static List<Column> getcolumnused(BinaryExpression expression) {
+    public static List<Column> getcolumnused(Expression givenexpression) {
         List<Column> list = new ArrayList<>();
-        if (expression.getLeftExpression() instanceof Column) {
-            Column leftcolumn = (Column) expression.getLeftExpression();
-            list.add(leftcolumn);
-        } else {
-            if (expression.getLeftExpression() instanceof BinaryExpression) {
-                list.addAll(getcolumnused((BinaryExpression) expression.getLeftExpression()));
+        if (givenexpression instanceof BinaryExpression) {
+            BinaryExpression expression = (BinaryExpression) givenexpression;
+            if (expression.getLeftExpression() instanceof Column) {
+                Column leftcolumn = (Column) expression.getLeftExpression();
+                list.add(leftcolumn);
+            } else {
+                if (expression.getLeftExpression() instanceof BinaryExpression) {
+                    list.addAll(getcolumnused(expression.getLeftExpression()));
+                }
+            }
+            if (givenexpression instanceof BinaryExpression) {
+                if (expression.getRightExpression() instanceof Column) {
+                    Column rightcolumn = (Column) expression.getRightExpression();
+                    list.add(rightcolumn);
+                } else {
+                    if (expression.getRightExpression() instanceof BinaryExpression) {
+                        list.addAll(getcolumnused(expression.getRightExpression()));
+                    }
+                }
             }
         }
-        if (expression.getRightExpression() instanceof Column) {
-            Column rightcolumn = (Column) expression.getRightExpression();
-            list.add(rightcolumn);
-        } else {
-            if (expression.getRightExpression() instanceof BinaryExpression) {
-                list.addAll(getcolumnused((BinaryExpression) expression.getRightExpression()));
+        if (givenexpression instanceof InExpression) {
+            InExpression expression = (InExpression) givenexpression;
+            if (expression.getLeftExpression() instanceof Column) {
+                Column leftcolumn = (Column) expression.getLeftExpression();
+                list.add(leftcolumn);
             }
         }
         return list;
@@ -155,18 +161,14 @@ public class Optimize {
         return lowest;
     }
 
-    public static List<BinaryExpression> splitconditions(Expression where) {
-        List<BinaryExpression> list = new ArrayList<>();
+    public static List<Expression> splitconditions(Expression where) {
+        List<Expression> list = new ArrayList<>();
 //        System.out.println(where);
-        if (where instanceof OrExpression) {
-            list.add((BinaryExpression) where);
-        } else if (where instanceof AndExpression) {
+        if (where instanceof AndExpression) {
             list.addAll(splitconditions(((BinaryExpression) where).getLeftExpression()));
             list.addAll(splitconditions(((BinaryExpression) where).getRightExpression()));
-        } else if (where instanceof BinaryExpression) {
-            if ((((BinaryExpression) where).getLeftExpression() instanceof Column) || (((BinaryExpression) where).getRightExpression() instanceof Column)) {
-                list.add((BinaryExpression) where);
-            }
+        } else {
+            list.add(where);
         }
         return (list);
 
@@ -174,8 +176,6 @@ public class Optimize {
 
     public static boolean get(LinkedHashMap structure, Column main_column) {
         String table;
-//        System.out.println(structure);
-//        System.out.println(main_column);
         int id = Integer.MAX_VALUE;
         if ((main_column.getTable() != null) && (main_column.getTable().getName() != null)) {
             table = main_column.getTable().getName();

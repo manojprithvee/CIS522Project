@@ -12,14 +12,15 @@ import net.sf.jsqlparser.statement.select.*;
 
 import java.util.*;
 
-public class Get_Columns implements SelectVisitor, SelectItemVisitor, FromItemVisitor, ExpressionVisitor {
+public class Organizer implements SelectVisitor, SelectItemVisitor, FromItemVisitor, ExpressionVisitor, ItemsListVisitor {
     private static final String WILDCARD = "*";
     Set<String> columns = new HashSet<String>(), tables = new HashSet<String>(), wildcards = new HashSet<String>(), used_tables = new HashSet<String>();
     private Map<String, String> aliases = new HashMap<String, String>();
     SelectBody body;
 
-    public Get_Columns(SelectBody body) {
+    public Organizer(SelectBody body) {
         this.body = body;
+        this.body.accept(this);
     }
 
     @Override
@@ -85,25 +86,12 @@ public class Get_Columns implements SelectVisitor, SelectItemVisitor, FromItemVi
     @Override
     public void visit(Addition addition) {
         addition.getLeftExpression().accept(this);
-        addition.getLeftExpression().accept(this);
-        addition.getLeftExpression().accept(this);
-        addition.getLeftExpression().accept(this);
-        addition.getLeftExpression().accept(this);
-        addition.getLeftExpression().accept(this);
-        addition.getLeftExpression().accept(this);
-        addition.getLeftExpression().accept(this);
         addition.getRightExpression().accept(this);
     }
 
     @Override
     public void visit(Division division) {
-        division.getRightExpression().accept(this);
-        division.getRightExpression().accept(this);
-        division.getRightExpression().accept(this);
-        division.getRightExpression().accept(this);
-        division.getRightExpression().accept(this);
-        division.getRightExpression().accept(this);
-        division.getRightExpression().accept(this);
+
         division.getLeftExpression().accept(this);
         division.getRightExpression().accept(this);
     }
@@ -157,21 +145,9 @@ public class Get_Columns implements SelectVisitor, SelectItemVisitor, FromItemVi
 
     @Override
     public void visit(InExpression inExpression) {
-        if (body instanceof PlainSelect) {
-            System.out.println(inExpression.getLeftExpression());
-            inExpression.getLeftExpression().accept(this);
-            ExpressionList i = (ExpressionList) inExpression.getItemsList();
-            BinaryExpression a = null;
-            for (var c : i.getExpressions()) {
-                if (a == null)
-                    a = new EqualsTo(inExpression.getLeftExpression(), c);
-                else
-                    a = new OrExpression(a, new EqualsTo(inExpression.getLeftExpression(), c));
-            }
-            a.accept(this);
-            Expression abc = ((PlainSelect) body).getWhere();
-            ((PlainSelect) body).setWhere(new AndExpression(abc, a));
-        }
+        inExpression.getLeftExpression().accept(this);
+        inExpression.getItemsList().accept(this);
+
     }
 
     @Override
@@ -295,9 +271,16 @@ public class Get_Columns implements SelectVisitor, SelectItemVisitor, FromItemVi
 
     @Override
     public void visit(SubSelect subSelect) {
-        Get_Columns extractor = new Get_Columns(subSelect.getSelectBody());
+        Organizer extractor = new Organizer(subSelect.getSelectBody());
         subSelect.getSelectBody().accept(extractor);
         columns.addAll(extractor.columns);
+    }
+
+    @Override
+    public void visit(ExpressionList expressionList) {
+        for (Expression c : expressionList.getExpressions()) {
+            c.accept(this);
+        }
     }
 
     @Override
@@ -382,7 +365,7 @@ public class Get_Columns implements SelectVisitor, SelectItemVisitor, FromItemVi
 
     @Override
     public void visit(Union union) {
-        Get_Columns extractor = new Get_Columns(union);
+        Organizer extractor = new Organizer(union);
         union.accept(extractor);
         columns.addAll(extractor.columns);
     }

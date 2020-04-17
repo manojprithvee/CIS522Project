@@ -27,10 +27,10 @@ public class Main {
                         CCJSqlParser parser = new CCJSqlParser(input);
                         try {
                             Statement stmt = parser.Statement();
-                            long startTime = System.currentTimeMillis();
+//                            long startTime = System.currentTimeMillis();
                             stmt.accept(new Sql_Parse());
-                            long stopTime = System.currentTimeMillis();
-                            System.out.println(stopTime - startTime);
+//                            long stopTime = System.currentTimeMillis();
+//                            System.out.println(stopTime - startTime);
 
 
                         } catch (Exception e) {
@@ -63,6 +63,6 @@ public class Main {
 
             }
         }
-
+        new File(Shared_Variables.table_location.toString() + File.separator + "temp.dat").delete();
     }
 }

@@ -33,11 +33,26 @@ public class Scan_Iterator implements DB_Iterator {
         this.full = full;
         this.schema = Shared_Variables.list_tables.get(table.getName().toUpperCase());
         this.newschema = schema;
-        this.index = new HashMap<Integer, Integer>();
+        this.index = new HashMap<>();
         for (String name : newschema.keySet())
             index.put(this.schema.get(name), newschema.get(name));
         Shared_Variables.current_schema = schema;
         reset();
+    }
+
+    public Scan_Iterator(File f, String table, LinkedHashMap<String, Integer> schema) {
+        this.file = f;
+        this.full = false;
+        this.table = new Table(table);
+        this.schema = schema;
+        reset();
+        index = new HashMap<>();
+        int count = 0;
+        for (String name : schema.keySet()) {
+            index.put(count, count);
+            count++;
+        }
+        newschema = null;
     }
 
     @Override

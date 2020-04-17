@@ -24,6 +24,7 @@ public class Aggregate_Iterator implements DB_Iterator {
     @Override
     public void reset() {
         oper.reset();
+        output = true;
     }
 
     @Override
