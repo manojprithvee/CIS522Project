@@ -9,10 +9,15 @@ import java.util.LinkedHashMap;
 
 
 public class Join_Node extends RA_Tree {
-//    private final Table table;
-    private final int size;
-    DB_Iterator itrator;
     BinaryExpression expression;
+
+    public BinaryExpression getExpression() {
+        return expression;
+    }
+
+    public void setExpression(BinaryExpression expression) {
+        this.expression = expression;
+    }
 
     public Join_Node(RA_Tree left, RA_Tree right, BinaryExpression expression) {
         this.left = left;
@@ -20,8 +25,6 @@ public class Join_Node extends RA_Tree {
         this.expression = expression;
         left.setParent(this);
         right.setParent(this);
-        LinkedHashMap<String, Integer> newSchema = new LinkedHashMap<>();
-        size = newSchema.size();
         this.expression = expression;
         schema = create_new_schema(right.getSchema(), left.getSchema());
     }
@@ -55,8 +58,7 @@ public class Join_Node extends RA_Tree {
             leftIndex = index;
             rightIndex = right.getSchema().get(c2);
         }
-        itrator = new Grace_Join_Iterator(left, right, leftIndex, rightIndex);
-        return itrator;
+        return new Grace_Join_Iterator(left, right, leftIndex, rightIndex);
     }
 
     @Override

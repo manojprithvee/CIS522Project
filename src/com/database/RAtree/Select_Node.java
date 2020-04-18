@@ -7,6 +7,14 @@ import net.sf.jsqlparser.expression.Expression;
 public class Select_Node extends RA_Tree {
     public Expression where;
 
+    public Expression getWhere() {
+        return where;
+    }
+
+    public void setWhere(Expression where) {
+        this.where = where;
+    }
+
     public Select_Node(RA_Tree left, Expression where) {
         super();
 

@@ -4,7 +4,7 @@ import com.database.helpers.DB_Iterator;
 
 import java.util.LinkedHashMap;
 
-public abstract class RA_Tree {
+public abstract class RA_Tree implements Cloneable {
     RA_Tree left;
     RA_Tree right;
     RA_Tree parent;

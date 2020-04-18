@@ -3,26 +3,20 @@ package com.database.RAtree;
 import com.database.helpers.Cross_Product_Iterator;
 import com.database.helpers.DB_Iterator;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 
 public class Cross_Product_Node extends RA_Tree {
-    Cross_Product_Iterator iterator;
 
     public Cross_Product_Node(RA_Tree left, RA_Tree right) {
         this.left = left;
         this.right = right;
         left.setParent(this);
         right.setParent(this);
-        LinkedHashMap<String, Integer> newSchema = new LinkedHashMap<>();
-        ArrayList<String> dataType = new ArrayList<>();
-        create_new_schema(newSchema, right.getSchema(), left.getSchema(), dataType);
-        int size = newSchema.size();
-        schema = newSchema;
+        schema = create_new_schema(right.getSchema(), left.getSchema());
     }
 
-    ArrayList<String> create_new_schema(HashMap<String, Integer> newSchema, LinkedHashMap<String, Integer> leftSchema, LinkedHashMap<String, Integer> rightSchema, ArrayList<String> dataType) {
+    LinkedHashMap<String, Integer> create_new_schema(LinkedHashMap<String, Integer> leftSchema, LinkedHashMap<String, Integer> rightSchema) {
+        LinkedHashMap<String, Integer> newSchema = new LinkedHashMap<>();
         LinkedHashMap<String, Integer> oldschema = leftSchema;
         int sizes = 0;
         for (String col : oldschema.keySet()) {
@@ -33,14 +27,13 @@ public class Cross_Product_Node extends RA_Tree {
         for (String col : oldschema.keySet()) {
             newSchema.put(col, oldschema.get(col) + sizes);
         }
-        return dataType;
+        return newSchema;
     }
 
     public DB_Iterator get_iterator() {
-        iterator = new Cross_Product_Iterator(
+        return new Cross_Product_Iterator(
                 left,
                 right);
-        return iterator;
     }
 
     @Override

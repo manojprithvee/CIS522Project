@@ -7,6 +7,10 @@ import net.sf.jsqlparser.statement.select.Limit;
 public class Limit_Node extends RA_Tree {
     private final Limit limit;
 
+    public Limit getLimit() {
+        return limit;
+    }
+
     public Limit_Node(RA_Tree left, Limit limit) {
         super();
         this.left = left;

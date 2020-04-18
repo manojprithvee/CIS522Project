@@ -42,9 +42,9 @@ public class Cross_Product_Iterator implements DB_Iterator {
 
 
     public Object[] create_row(Object[] left, Object[] right) {
-        Object[] new_row = new Object[left.length + right.length];
         int index = 0;
         if (left == null || right == null) return null;
+        Object[] new_row = new Object[left.length + right.length];
         for (Object o : left) {
             new_row[index] = o;
             index++;

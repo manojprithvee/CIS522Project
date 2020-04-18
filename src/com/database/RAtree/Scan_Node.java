@@ -11,6 +11,14 @@ public class Scan_Node extends RA_Tree {
     private final Table table;
     boolean flag;
 
+    public boolean isFlag() {
+        return flag;
+    }
+
+    public void setFlag(boolean flag) {
+        this.flag = flag;
+    }
+
     public Scan_Node(Table table, boolean flag) {
         super();
         this.table = table;

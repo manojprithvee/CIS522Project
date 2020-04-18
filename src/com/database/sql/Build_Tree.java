@@ -64,7 +64,7 @@ public class Build_Tree implements SelectVisitor {
             t = (Table) plainSelect.getFromItem();
         root = build_from_joins(plainSelect.getFromItem(), plainSelect.getJoins());
         if (plainSelect.getWhere() != null) root = new Select_Node(root, plainSelect.getWhere());
-        root = new Project_Node(root, plainSelect, t);
+        root = new Project_Node(root, plainSelect.getSelectItems(), t);
         if (plainSelect.getHaving() != null) root = new Select_Node(root, plainSelect.getHaving());
         if (plainSelect.getOrderByElements() != null)
             root = new Order_By_Node(root, plainSelect.getOrderByElements(), t);

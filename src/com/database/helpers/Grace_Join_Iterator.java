@@ -3,7 +3,10 @@ package com.database.helpers;
 import com.database.RAtree.RA_Tree;
 import net.sf.jsqlparser.schema.Table;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 
 public class Grace_Join_Iterator implements DB_Iterator {
     private final DB_Iterator rightIterator;
@@ -40,10 +43,11 @@ public class Grace_Join_Iterator implements DB_Iterator {
         temp2 = rightIterator.next();
     }
 
-    public Object[] create_row(Object[] left, Object[] right, int size) {
-        Object[] new_row = new Object[left.length + right.length];
+    public Object[] create_row(Object[] left, Object[] right) {
+
         int index = 0;
         if (left == null || right == null) return null;
+        Object[] new_row = new Object[left.length + right.length];
         for (Object o : left) {
             new_row[index] = o;
             index++;
@@ -84,7 +88,7 @@ public class Grace_Join_Iterator implements DB_Iterator {
                 }
             } while (temp1 == null);
         }
-        Object[] output = create_row(temp2, temp1, size);
+        Object[] output = create_row(temp2, temp1);
         if (!current_group_iterator.hasNext())
             temp2 = rightIterator.next();
         return output;

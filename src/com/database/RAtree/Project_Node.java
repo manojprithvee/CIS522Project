@@ -10,16 +10,16 @@ import net.sf.jsqlparser.expression.Function;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.select.AllColumns;
-import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.SelectExpressionItem;
 import net.sf.jsqlparser.statement.select.SelectItem;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 
 public class Project_Node extends RA_Tree {
     private final ArrayList<Expression> inExpressions = new ArrayList<>();
-    private final PlainSelect body;
+    private final List<SelectItem> body;
     private final Table table;
     boolean isagg = false;
     boolean isattribule = false;
@@ -27,14 +27,14 @@ public class Project_Node extends RA_Tree {
     LinkedHashMap<String, Integer> new_schema = new LinkedHashMap<>();
     private boolean allColumns = false;
 
-    public Project_Node(RA_Tree left, PlainSelect plainSelect, Table t) {
+    public Project_Node(RA_Tree left, List<SelectItem> plainSelect, Table t) {
         this.left = left;
         left.setParent(this);
         this.body = plainSelect;
         this.table = t;
         ArrayList<SelectExpressionItem> items = new ArrayList<>();
-        allColumns = ((body.getSelectItems().get(0) instanceof AllColumns));
-        for (SelectItem item : body.getSelectItems()) {
+        allColumns = ((body.get(0) instanceof AllColumns));
+        for (SelectItem item : body) {
             items.addAll(new Select_Item_Builder(table, item).getitems());
         }
         int count = 0;
@@ -64,6 +64,14 @@ public class Project_Node extends RA_Tree {
         schema = new_schema;
     }
 
+    public List<SelectItem> getBody() {
+        return body;
+    }
+
+    public Table getTable() {
+        return table;
+    }
+
     @Override
     public DB_Iterator get_iterator() {
         if (allColumns) return this.getLeft().get_iterator();
@@ -74,7 +82,7 @@ public class Project_Node extends RA_Tree {
         } else {
             return new Projection_Iterator(
                     left,
-                    body.getSelectItems(),
+                    body,
                     allColumns);
         }
     }

@@ -17,6 +17,7 @@ import java.util.*;
 public class Optimize {
     public static void selectionpushdown(RA_Tree abc) {
         List<RA_Tree> selectNodes = Optimize.getnodes(abc, Select_Node.class);
+//                printtree(abc, true, "");
         for (RA_Tree node : selectNodes) {
             Select_Node select = (Select_Node) node;
             if (select.where instanceof BinaryExpression) {
@@ -69,13 +70,13 @@ public class Optimize {
             if (join.getRight() != null) join.getRight().setParent(join);
         }
 //        printtree(abc, true, "");
-
     }
 
     public static Select_Node getSelectParent(RA_Tree parent) {
         if (parent == null) return null;
         if (!(parent instanceof Select_Node)) return null;
-        if (((Select_Node) parent).where instanceof EqualsTo) return (Select_Node) parent;
+        if ((((Select_Node) parent).where instanceof EqualsTo) && ((((EqualsTo) ((Select_Node) parent).where).getLeftExpression() instanceof Column) && (((EqualsTo) ((Select_Node) parent).where).getRightExpression() instanceof Column)))
+            return (Select_Node) parent;
         else return getSelectParent(parent.getParent());
     }
 
