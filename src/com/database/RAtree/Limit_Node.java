@@ -11,6 +11,7 @@ public class Limit_Node extends RA_Tree {
         super();
         this.left = left;
         this.limit = limit;
+        left.setParent(this);
         schema = left.getSchema();
     }
 

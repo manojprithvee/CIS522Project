@@ -1,6 +1,5 @@
 package com.database.RAtree;
 
-import com.database.Shared_Variables;
 import com.database.helpers.Aggregate_Iterator;
 import com.database.helpers.DB_Iterator;
 import com.database.helpers.Group_By_Iterator;
@@ -30,21 +29,14 @@ public class Project_Node extends RA_Tree {
 
     public Project_Node(RA_Tree left, PlainSelect plainSelect, Table t) {
         this.left = left;
+        left.setParent(this);
         this.body = plainSelect;
         this.table = t;
-    }
-
-    @Override
-    public DB_Iterator get_iterator() {
         ArrayList<SelectExpressionItem> items = new ArrayList<>();
         allColumns = ((body.getSelectItems().get(0) instanceof AllColumns));
         for (SelectItem item : body.getSelectItems()) {
             items.addAll(new Select_Item_Builder(table, item).getitems());
         }
-
-        Table table = new Table(String.valueOf(Shared_Variables.table));
-        table.setAlias(String.valueOf(Shared_Variables.table));
-        Shared_Variables.table += 1;
         int count = 0;
         for (SelectExpressionItem item : items) {
             Expression expression = item.getExpression();
@@ -54,17 +46,26 @@ public class Project_Node extends RA_Tree {
             String alias = item.getAlias();
             if (expression instanceof Column && alias == null) {
                 if (((Column) expression).getTable() == null) {
+
                     new_schema.put(table.getName() + "." + ((Column) expression).getColumnName(), count);
                 } else {
                     new_schema.put(((Column) expression).getWholeColumnName(), count);
                 }
             } else {
                 if (alias == null) alias = expression.toString();
-                new_schema.put(table.getName() + "." + alias, count);
+                if (expression instanceof Column) {
+                    new_schema.put(((Column) expression).getWholeColumnName(), count);
+                } else {
+                    new_schema.put(table.getName() + "." + alias, count);
+                }
             }
             count++;
         }
         schema = new_schema;
+    }
+
+    @Override
+    public DB_Iterator get_iterator() {
         if (allColumns) return this.getLeft().get_iterator();
         if (isattribule && isagg) {
             return new Group_By_Iterator(left.get_iterator(), inExpressions, left.getSchema());

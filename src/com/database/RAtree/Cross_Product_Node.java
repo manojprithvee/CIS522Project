@@ -1,9 +1,7 @@
 package com.database.RAtree;
 
-import com.database.Shared_Variables;
 import com.database.helpers.Cross_Product_Iterator;
 import com.database.helpers.DB_Iterator;
-import net.sf.jsqlparser.schema.Table;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -15,15 +13,11 @@ public class Cross_Product_Node extends RA_Tree {
     public Cross_Product_Node(RA_Tree left, RA_Tree right) {
         this.left = left;
         this.right = right;
+        left.setParent(this);
+        right.setParent(this);
         LinkedHashMap<String, Integer> newSchema = new LinkedHashMap<>();
         ArrayList<String> dataType = new ArrayList<>();
-        String newTableName = String.valueOf(Shared_Variables.table);
-        Shared_Variables.table += 1;
-        Table table = new Table(newTableName, newTableName);
-        table.setAlias(newTableName);
         create_new_schema(newSchema, right.getSchema(), left.getSchema(), dataType);
-        Shared_Variables.list_tables.put(newTableName, newSchema);
-        Shared_Variables.schema_store.put(newTableName, dataType);
         int size = newSchema.size();
         schema = newSchema;
     }

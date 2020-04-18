@@ -7,6 +7,7 @@ public class Distinct_Node extends RA_Tree {
     public Distinct_Node(RA_Tree left) {
         super();
         this.left = left;
+        left.setParent(this);
         schema = left.getSchema();
     }
 

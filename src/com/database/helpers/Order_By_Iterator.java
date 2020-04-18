@@ -5,7 +5,10 @@ import com.database.sql.Row_Compare;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.select.OrderByElement;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
 
 public class Order_By_Iterator implements DB_Iterator {
     private final RA_Tree left;
@@ -32,14 +35,7 @@ public class Order_By_Iterator implements DB_Iterator {
             buffer.add(row);
             row = left_iterator.next();
         }
-
-        Comparator<Object[]> main_compare = null;
-        for (OrderByElement orderbyElement : orderByElements) {
-            if (main_compare == null) {
-                main_compare = new Row_Compare(orderbyElement, table, left.getSchema());
-            }
-            main_compare = main_compare.thenComparing(new Row_Compare(orderbyElement, table, left.getSchema()));
-        }
+        Row_Compare main_compare = new Row_Compare(orderByElements, left.getSchema());
         Collections.sort(buffer, main_compare);
         ite = buffer.iterator();
     }

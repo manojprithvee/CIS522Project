@@ -365,9 +365,11 @@ public class Organizer implements SelectVisitor, SelectItemVisitor, FromItemVisi
 
     @Override
     public void visit(Union union) {
-        Organizer extractor = new Organizer(union);
-        union.accept(extractor);
-        columns.addAll(extractor.columns);
+        for (PlainSelect plainselect : union.getPlainSelects()) {
+            Organizer extractor = new Organizer(plainselect);
+            plainselect.accept(extractor);
+            columns.addAll(extractor.columns);
+        }
     }
 
     public String get(LinkedHashMap structure, Column main_column) {

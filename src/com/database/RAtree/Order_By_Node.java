@@ -14,6 +14,7 @@ public class Order_By_Node extends RA_Tree {
     public Order_By_Node(RA_Tree left, List<OrderByElement> orderByElements, Table t) {
         super();
         this.left = left;
+        left.setParent(this);
         this.orderByElements = orderByElements;
         schema = left.getSchema();
         table = t;

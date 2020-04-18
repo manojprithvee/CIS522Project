@@ -17,7 +17,6 @@ import java.util.*;
 public class Optimize {
     public static void selectionpushdown(RA_Tree abc) {
         List<RA_Tree> selectNodes = Optimize.getnodes(abc, Select_Node.class);
-//        printtree(abc, true, "");
         for (RA_Tree node : selectNodes) {
             Select_Node select = (Select_Node) node;
             if (select.where instanceof BinaryExpression) {
@@ -25,7 +24,7 @@ public class Optimize {
                 for (Expression expression : splitconditions(where)) {
                     List<Column> column_used = getcolumnused(expression);
                     RA_Tree lowestChild = getLowestChild(select.getLeft(), column_used);
-                    Select_Node new_select = new Select_Node(lowestChild, expression, lowestChild.get_iterator().getTable());
+                    Select_Node new_select = new Select_Node(lowestChild, expression, true);
                     RA_Tree parent = lowestChild.getParent();
                     if (parent.getLeft() == lowestChild) {
                         parent.setLeft(new_select);
@@ -33,7 +32,6 @@ public class Optimize {
                         parent.setRight(new_select);
                     }
                     new_select.setParent(parent);
-//                    new_select.setLeft(lowestChild);
                     lowestChild.setParent(new_select);
                     new_select.setSchema(lowestChild.getSchema());
                 }
@@ -96,6 +94,7 @@ public class Optimize {
             }
         }
     }
+
 
     public static List<RA_Tree> getnodes(RA_Tree root, Class<?> type) {
         List<RA_Tree> node = new ArrayList<>();

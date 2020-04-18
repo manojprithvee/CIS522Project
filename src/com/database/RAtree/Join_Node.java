@@ -1,18 +1,15 @@
 package com.database.RAtree;
 
-import com.database.Shared_Variables;
 import com.database.helpers.DB_Iterator;
 import com.database.helpers.Grace_Join_Iterator;
 import net.sf.jsqlparser.expression.BinaryExpression;
 import net.sf.jsqlparser.schema.Column;
-import net.sf.jsqlparser.schema.Table;
 
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
 
 
 public class Join_Node extends RA_Tree {
-    private final Table table;
+//    private final Table table;
     private final int size;
     DB_Iterator itrator;
     BinaryExpression expression;
@@ -21,12 +18,9 @@ public class Join_Node extends RA_Tree {
         this.left = left;
         this.right = right;
         this.expression = expression;
+        left.setParent(this);
+        right.setParent(this);
         LinkedHashMap<String, Integer> newSchema = new LinkedHashMap<>();
-        ArrayList<String> dataType = new ArrayList<>();
-        String newTableName = String.valueOf(Shared_Variables.table);
-        Shared_Variables.table += 1;
-        this.table = new Table(newTableName, newTableName);
-        this.table.setAlias(newTableName);
         size = newSchema.size();
         this.expression = expression;
         schema = create_new_schema(right.getSchema(), left.getSchema());
