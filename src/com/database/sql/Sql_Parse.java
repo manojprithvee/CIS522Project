@@ -49,6 +49,7 @@ public class Sql_Parse implements StatementVisitor {
     public void visit(Select select) {
         Organizer extractor = new Organizer(select.getSelectBody());
         Shared_Variables.column_used = extractor.columns;
+//        System.out.println(select);
         Build_Tree treeBuilder = new Build_Tree(select.getSelectBody());
         RA_Tree root = treeBuilder.getRoot();
         Optimize.selectionpushdown(root);

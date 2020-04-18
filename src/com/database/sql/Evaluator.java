@@ -43,8 +43,7 @@ public class Evaluator extends Eval {
 
     public PrimitiveValue eval(Column main_column) {
         String table;
-        int id = 0;
-
+        int id = -1;
         if ((main_column.getTable() != null) && (main_column.getTable().getName() != null)) {
             table = main_column.getTable().getName();
             if (!structure.containsKey(table + "." + main_column.getColumnName()))

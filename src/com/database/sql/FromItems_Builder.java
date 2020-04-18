@@ -40,16 +40,14 @@ public class FromItems_Builder implements FromItemVisitor {
     public void visit(SubSelect subSelect) {
 
         Build_Tree Build_Tree = new Build_Tree(subSelect.getSelectBody());
-
-        if (subSelect.getAlias() != null) {
-            schema = new LinkedHashMap<>();
-            var count = 0;
-            for (var i : Build_Tree.getSchema().keySet()) {
-                schema.put(subSelect.getAlias() + "." + i, count);
-                count += 1;
-            }
-        }
         current = Build_Tree.getRoot();
+        if (subSelect.getAlias() != null) {
+            LinkedHashMap<String, Integer> sschema = new LinkedHashMap<>();
+            for (var i : Build_Tree.getSchema().keySet()) {
+                sschema.put(subSelect.getAlias() + "." + i.split("\\.")[1], Build_Tree.getSchema().get(i));
+            }
+            current.setSchema(sschema);
+        }
     }
 
     @Override

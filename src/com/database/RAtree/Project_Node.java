@@ -10,16 +10,16 @@ import net.sf.jsqlparser.expression.Function;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.select.AllColumns;
+import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.SelectExpressionItem;
 import net.sf.jsqlparser.statement.select.SelectItem;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
-import java.util.List;
 
 public class Project_Node extends RA_Tree {
     private final ArrayList<Expression> inExpressions = new ArrayList<>();
-    private final List<SelectItem> body;
+    private final PlainSelect body;
     private final Table table;
     boolean isagg = false;
     boolean isattribule = false;
@@ -27,14 +27,14 @@ public class Project_Node extends RA_Tree {
     LinkedHashMap<String, Integer> new_schema = new LinkedHashMap<>();
     private boolean allColumns = false;
 
-    public Project_Node(RA_Tree left, List<SelectItem> plainSelect, Table t) {
+    public Project_Node(RA_Tree left, PlainSelect plainSelect, Table t) {
         this.left = left;
         left.setParent(this);
         this.body = plainSelect;
         this.table = t;
         ArrayList<SelectExpressionItem> items = new ArrayList<>();
-        allColumns = ((body.get(0) instanceof AllColumns));
-        for (SelectItem item : body) {
+        allColumns = ((body.getSelectItems().get(0) instanceof AllColumns));
+        for (SelectItem item : body.getSelectItems()) {
             items.addAll(new Select_Item_Builder(table, item).getitems());
         }
         int count = 0;
@@ -55,6 +55,7 @@ public class Project_Node extends RA_Tree {
                 if (alias == null) alias = expression.toString();
                 if (expression instanceof Column) {
                     new_schema.put(((Column) expression).getWholeColumnName(), count);
+                    new_schema.put(((Column) expression).getTable().getName() + "." + alias, count);
                 } else {
                     new_schema.put(table.getName() + "." + alias, count);
                 }
@@ -64,7 +65,7 @@ public class Project_Node extends RA_Tree {
         schema = new_schema;
     }
 
-    public List<SelectItem> getBody() {
+    public PlainSelect getBody() {
         return body;
     }
 
@@ -75,14 +76,14 @@ public class Project_Node extends RA_Tree {
     @Override
     public DB_Iterator get_iterator() {
         if (allColumns) return this.getLeft().get_iterator();
-        if (isattribule && isagg) {
+        if ((isattribule && isagg) || body.getGroupByColumnReferences() != null) {
             return new Group_By_Iterator(left.get_iterator(), inExpressions, left.getSchema());
         } else if (!isattribule && isagg) {
             return new Aggregate_Iterator(left.get_iterator(), inExpressions, new_schema, left.getSchema());
         } else {
             return new Projection_Iterator(
                     left,
-                    body,
+                    body.getSelectItems(),
                     allColumns);
         }
     }
@@ -90,13 +91,14 @@ public class Project_Node extends RA_Tree {
     @Override
     public String toString() {
         return "Project_Node{" +
-                "inExpressions=" + inExpressions +
-                ", body=" + body +
-                ", table=" + table +
-                ", isagg=" + isagg +
-                ", isattribule=" + isattribule +
+//                "inExpressions=" + inExpressions +
+//                ", body=" + body +
+//                ", table=" + table +
+//                ", isagg=" + isagg +
+//                ", isattribule=" + isattribule +
                 ", new_schema=" + new_schema +
-                ", allColumns=" + allColumns +
+                ", new_schema=" + left.getSchema() +
+//                ", allColumns=" + allColumns +
                 '}';
     }
 }

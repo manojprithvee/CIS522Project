@@ -41,6 +41,7 @@ public class Projection_Iterator implements DB_Iterator {
     @Override
     public Object[] next() {
         Object[] temp = op.next();
+//        System.out.println(Arrays.deepToString(temp));
         Evaluator eval = new Evaluator(schema, temp);
         int index = 0;
         if (temp == null) return null;
@@ -78,6 +79,7 @@ public class Projection_Iterator implements DB_Iterator {
                     x = new Column(null, e.getExpression().toString());
                     row[index] = eval.eval(x);
                 } else
+//                    System.out.println(e.getExpression());
                     row[index] = eval.eval(e.getExpression());
             } catch (SQLException e1) {
                 e1.printStackTrace();

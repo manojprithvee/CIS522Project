@@ -27,6 +27,7 @@ public class Group_By_Iterator implements DB_Iterator {
         this.inSchema = inSchema;
         evaluator = new Evaluator(inSchema);
         reset();
+//        System.out.println("group");
     }
 
     @Override
@@ -39,7 +40,6 @@ public class Group_By_Iterator implements DB_Iterator {
             List<Object> row = buffer.keySet().iterator().next();
             ArrayList<Storage> pairs = buffer.get(row);
             buffer.remove(row);
-
             for (Storage pair : pairs) {
                 row.set(pair.id, pair.function.output);
             }
@@ -61,7 +61,7 @@ public class Group_By_Iterator implements DB_Iterator {
             List<Object> outRow = Arrays.asList(new Object[outExpressions.size()]);
             ArrayList<Integer> indexes = new ArrayList<>();
             evaluator.setTuple(inRow);
-
+//            System.out.println(Arrays.deepToString(inRow));
             for (int i = 0; i < outExpressions.size(); i++) {
                 if (outExpressions.get(i) instanceof Column) {
                     try {
@@ -83,9 +83,9 @@ public class Group_By_Iterator implements DB_Iterator {
             ArrayList<Storage> pairs = new ArrayList<Storage>();
 
             for (Integer i : indexes) {
-                Aggregator aggregate = Aggregator.get_agg((Function) outExpressions.get(i), inSchema);
-                aggregate.get_results(inRow);
-                Storage pair = new Storage(i, aggregate);
+                Aggregator function = Aggregator.get_agg((Function) outExpressions.get(i), inSchema);
+                function.get_results(inRow);
+                Storage pair = new Storage(i, function);
                 pairs.add(pair);
             }
 

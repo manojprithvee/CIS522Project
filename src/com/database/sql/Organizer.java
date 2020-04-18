@@ -122,7 +122,9 @@ public class Organizer implements SelectVisitor, SelectItemVisitor, FromItemVisi
 
     @Override
     public void visit(Between between) {
-
+        between.getLeftExpression().accept(this);
+        between.getBetweenExpressionEnd().accept(this);
+        between.getBetweenExpressionStart().accept(this);
     }
 
     @Override

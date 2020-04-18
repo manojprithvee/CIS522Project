@@ -66,6 +66,7 @@ public class Join_Node extends RA_Tree {
         return "Join_Node{" +
                 "lefttable=" + left.getSchema() +
                 ", righttable=" + right.getSchema() +
+                ", schema=" + schema +
                 '}';
     }
 }

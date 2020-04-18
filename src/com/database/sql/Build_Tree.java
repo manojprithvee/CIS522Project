@@ -64,12 +64,14 @@ public class Build_Tree implements SelectVisitor {
             t = (Table) plainSelect.getFromItem();
         root = build_from_joins(plainSelect.getFromItem(), plainSelect.getJoins());
         if (plainSelect.getWhere() != null) root = new Select_Node(root, plainSelect.getWhere());
-        root = new Project_Node(root, plainSelect.getSelectItems(), t);
+        root = new Project_Node(root, plainSelect, t);
         if (plainSelect.getHaving() != null) root = new Select_Node(root, plainSelect.getHaving());
         if (plainSelect.getOrderByElements() != null)
             root = new Order_By_Node(root, plainSelect.getOrderByElements(), t);
         if (plainSelect.getDistinct() != null) root = new Distinct_Node(root);
+//        System.out.println("distinct");
         if (plainSelect.getLimit() != null) root = new Limit_Node(root, plainSelect.getLimit());
+//        System.out.println("limit");
     }
 
     public RA_Tree build_from_joins(FromItem fromItem, List<Join> joins) {
