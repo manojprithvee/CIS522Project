@@ -55,14 +55,7 @@ public class Evaluator extends Eval {
         else if (structure.containsKey(Shared_Variables.rename.get(main_column.getColumnName()).toString()))
             id = structure.get(Shared_Variables.rename.get(main_column.getColumnName()).toString());
         else id = columnchange(id, main_column.getColumnName());
-        try {
-            return (PrimitiveValue) row[id];
-        } catch (Exception e) {
-            System.out.println(structure);
-            System.out.println(Arrays.deepToString(row));
-            System.out.println(main_column);
-            throw e;
-        }
+        return (PrimitiveValue) row[id];
     }
 
 
@@ -70,7 +63,6 @@ public class Evaluator extends Eval {
         ItemsList i = inExpression.getItemsList();
         Expression left = inExpression.getLeftExpression();
         if (i instanceof ExpressionList) {
-            BinaryExpression a = null;
             for (var c : ((ExpressionList) i).getExpressions()) {
                 if (eval(new EqualsTo(left, c)).toBool()) {
                     return BooleanValue.TRUE;

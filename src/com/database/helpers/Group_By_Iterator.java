@@ -16,7 +16,7 @@ public class Group_By_Iterator implements DB_Iterator {
     private final ArrayList<Expression> outExpressions;
     private final DB_Iterator left;
     private final Evaluator evaluator;
-    private HashMap<List<Object>, LinkedHashMap<Integer, Aggregator>> groups;
+    private HashMap<List<Object>, HashMap<Integer, Aggregator>> groups;
 
     public Group_By_Iterator(DB_Iterator left,
                              ArrayList<Expression> outExpressions,
@@ -37,7 +37,7 @@ public class Group_By_Iterator implements DB_Iterator {
             return null;
         } else {
             List<Object> row = groups.keySet().iterator().next();
-            LinkedHashMap<Integer, Aggregator> pairs = groups.get(row);
+            HashMap<Integer, Aggregator> pairs = groups.get(row);
             groups.remove(row);
             for (Integer pair : pairs.keySet()) {
                 row.set(pair, pairs.get(pair).output);
@@ -77,7 +77,7 @@ public class Group_By_Iterator implements DB_Iterator {
                 leftrows = left.next();
                 continue;
             }
-            LinkedHashMap<Integer, Aggregator> rows = new LinkedHashMap<>();
+            HashMap<Integer, Aggregator> rows = new HashMap<>();
             for (Integer i : indexes) {
                 Aggregator function = Aggregator.get_agg((Function) outExpressions.get(i), inSchema);
                 function.get_results(leftrows);

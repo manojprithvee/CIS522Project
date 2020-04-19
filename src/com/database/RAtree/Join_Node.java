@@ -1,7 +1,7 @@
 package com.database.RAtree;
 
 import com.database.helpers.DB_Iterator;
-import com.database.helpers.External_Join_Iterator;
+import com.database.helpers.Grace_Join_Iterator;
 import net.sf.jsqlparser.expression.BinaryExpression;
 import net.sf.jsqlparser.schema.Column;
 
@@ -62,7 +62,7 @@ public class Join_Node extends RA_Tree {
             leftIndex = index;
             rightIndex = right.getSchema().get(c2);
         }
-        return new External_Join_Iterator(left, right, leftIndex, rightIndex);
+        return new Grace_Join_Iterator(left, right, leftIndex, rightIndex);
     }
 
     @Override

@@ -93,8 +93,6 @@ public class Build_Tree implements SelectVisitor {
                 } else {
                     output = new Cross_Product_Node(left, right);
                 }
-                left.setParent(output);
-                right.setParent(output);
             } else {
                 output = table.current;
             }

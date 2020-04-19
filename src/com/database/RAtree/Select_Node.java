@@ -5,6 +5,7 @@ import com.database.helpers.Selection_Iterator;
 import net.sf.jsqlparser.expression.Expression;
 
 public class Select_Node extends RA_Tree {
+    private boolean optimize;
     public Expression where;
 
     public Expression getWhere() {
@@ -26,9 +27,13 @@ public class Select_Node extends RA_Tree {
         super();
         this.left = left;
         this.where = where;
+        this.optimize = optimize;
         schema = left.getSchema();
     }
 
+    public boolean isOptimize() {
+        return optimize;
+    }
 
     public DB_Iterator get_iterator() {
         return new Selection_Iterator(

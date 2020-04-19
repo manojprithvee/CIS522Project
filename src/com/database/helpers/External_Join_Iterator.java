@@ -6,28 +6,16 @@ import net.sf.jsqlparser.schema.Table;
 import java.util.*;
 
 public class External_Join_Iterator implements DB_Iterator {
-    private final RA_Tree left;
-    private final RA_Tree right;
-    private final ArrayList<Object[]> buffer;
-    private DB_Iterator rightIterator;
-    private Map<Object, ArrayList<Object[]>> leftmap;
-    private Map<Object, ArrayList<Object[]>> rightmap;
-    private final ArrayList<Object> keys;
+    private final LinkedList<Object[]> buffer;
     private Iterator<Object[]> bufferintrator;
-    private DB_Iterator leftIterator;
-    private Iterator<Object[]> left_list;
-    private Iterator<Object[]> right_list;
-    private Object key;
 
 
     public External_Join_Iterator(RA_Tree left, RA_Tree right,
                                   int leftindex, int rightindex) {
-        this.left = left;
-        this.right = right;
-        this.leftIterator = left.get_iterator();
-        this.rightIterator = right.get_iterator();
-        Object[] row = this.leftIterator.next();
-        leftmap = new HashMap<>();
+        DB_Iterator leftIterator = left.get_iterator();
+        DB_Iterator rightIterator = right.get_iterator();
+        Object[] row = leftIterator.next();
+        Map<Object, ArrayList<Object[]>> leftmap = new HashMap<>();
         while (row != null) {
             Object key = row[leftindex];
             ArrayList<Object[]> abc;
@@ -38,10 +26,10 @@ public class External_Join_Iterator implements DB_Iterator {
             }
             abc.add(row);
             leftmap.put(key, abc);
-            row = this.leftIterator.next();
+            row = leftIterator.next();
         }
-        row = this.rightIterator.next();
-        rightmap = new HashMap<>();
+        row = rightIterator.next();
+        Map<Object, ArrayList<Object[]>> rightmap = new HashMap<>();
         while (row != null) {
             Object key = row[rightindex];
             ArrayList<Object[]> abc;
@@ -52,19 +40,19 @@ public class External_Join_Iterator implements DB_Iterator {
             }
             abc.add(row);
             rightmap.put(key, abc);
-            row = this.rightIterator.next();
+            row = rightIterator.next();
         }
-        this.leftIterator = null;
-        this.rightIterator = null;
+        leftIterator = null;
+        rightIterator = null;
 
         leftmap.keySet().retainAll(rightmap.keySet());
         rightmap.keySet().retainAll(leftmap.keySet());
         Set<Object> setkeys = leftmap.keySet();
-        buffer = new ArrayList<>();
-        keys = new ArrayList<Object>(setkeys);
+        buffer = new LinkedList<>();
+        ArrayList<Object> keys = new ArrayList<Object>(setkeys);
         for (Object key : keys) {
-            left_list = leftmap.get(key).iterator();
-            right_list = rightmap.get(key).iterator();
+            Iterator<Object[]> left_list = leftmap.get(key).iterator();
+            Iterator<Object[]> right_list = rightmap.get(key).iterator();
             while (left_list.hasNext()) {
                 Object[] leftrow = left_list.next();
                 while (right_list.hasNext()) {

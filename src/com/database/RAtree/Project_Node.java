@@ -35,7 +35,7 @@ public class Project_Node extends RA_Tree {
         ArrayList<SelectExpressionItem> items = new ArrayList<>();
         allColumns = ((body.getSelectItems().get(0) instanceof AllColumns));
         for (SelectItem item : body.getSelectItems()) {
-            items.addAll(new Select_Item_Builder(table, item).getitems());
+            items.addAll(new Select_Item_Builder(table, item, left.getSchema()).getitems());
         }
         int count = 0;
         for (SelectExpressionItem item : items) {
@@ -63,7 +63,9 @@ public class Project_Node extends RA_Tree {
             }
             count++;
         }
+
         schema = new_schema;
+
     }
 
     public PlainSelect getBody() {
