@@ -10,8 +10,8 @@ import java.util.LinkedHashMap;
 public abstract class Aggregator {
 
     protected final Expression expression;
-    protected Evaluator evaluator;
     public PrimitiveValue output;
+    protected Evaluator evaluator;
 
 
     public Aggregator(Expression e, LinkedHashMap<String, Integer> schema) {

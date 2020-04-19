@@ -10,6 +10,7 @@ import java.util.LinkedHashMap;
 
 public class Sum extends Aggregator {
     Boolean isLong = null;
+
     public Sum(Expression expression, LinkedHashMap<String, Integer> schema) {
         super(expression, schema);
     }

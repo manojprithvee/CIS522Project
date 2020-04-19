@@ -9,6 +9,7 @@ import java.util.LinkedHashMap;
 public class Count extends Aggregator {
 
     Long count = 0L;
+
     public Count(Expression expression, LinkedHashMap<String, Integer> schema) {
         super(expression, schema);
         output = new LongValue(0L);

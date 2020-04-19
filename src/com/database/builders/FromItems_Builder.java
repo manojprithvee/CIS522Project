@@ -24,14 +24,14 @@ public class FromItems_Builder implements FromItemVisitor {
         fromItems.accept(this);
     }
 
-    public long getCost() {
-        return cost;
-    }
-
     public FromItems_Builder(FromItem fromItems, boolean flag) {
         this.fromItem = fromItems;
         this.flag = flag;
         fromItems.accept(this);
+    }
+
+    public long getCost() {
+        return cost;
     }
 
     public RA_Tree getCurrent() {

@@ -14,8 +14,8 @@ import java.util.*;
 public class Organizer implements SelectVisitor, SelectItemVisitor, FromItemVisitor, ExpressionVisitor, ItemsListVisitor {
     private static final String WILDCARD = "*";
     public Set<String> columns = new HashSet<String>(), tables = new HashSet<String>(), wildcards = new HashSet<String>(), used_tables = new HashSet<String>();
-    private Map<String, String> aliases = new HashMap<String, String>();
     SelectBody body;
+    private Map<String, String> aliases = new HashMap<String, String>();
 
     public Organizer(SelectBody body) {
         this.body = body;

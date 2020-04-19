@@ -13,14 +13,6 @@ import java.util.Set;
 public class Join_Node extends RA_Tree {
     BinaryExpression expression;
 
-    public BinaryExpression getExpression() {
-        return expression;
-    }
-
-    public void setExpression(BinaryExpression expression) {
-        this.expression = expression;
-    }
-
     public Join_Node(RA_Tree left, RA_Tree right, BinaryExpression expression) {
         this.left = left;
         this.right = right;
@@ -29,6 +21,14 @@ public class Join_Node extends RA_Tree {
         right.setParent(this);
         this.expression = expression;
         schema = create_new_schema(left.getSchema(), right.getSchema());
+    }
+
+    public BinaryExpression getExpression() {
+        return expression;
+    }
+
+    public void setExpression(BinaryExpression expression) {
+        this.expression = expression;
     }
 
     LinkedHashMap<String, Integer> create_new_schema(LinkedHashMap<String, Integer> leftSchema, LinkedHashMap<String, Integer> rightSchema) {

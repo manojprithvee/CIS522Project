@@ -14,6 +14,7 @@ import java.util.LinkedHashMap;
 public class Scan_Node extends RA_Tree {
     private final Table table;
     private final String tableFile;
+    boolean flag;
     private long size;
 
     public Scan_Node(Table table, boolean flag) {
@@ -37,8 +38,6 @@ public class Scan_Node extends RA_Tree {
         }
         schema = newSchema;
     }
-
-    boolean flag;
 
     public boolean isFlag() {
         return flag;

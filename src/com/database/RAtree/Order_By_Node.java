@@ -11,20 +11,20 @@ public class Order_By_Node extends RA_Tree {
     private final List<OrderByElement> orderByElements;
     private final Table table;
 
-    public List<OrderByElement> getOrderByElements() {
-        return orderByElements;
-    }
-
-    public Table getTable() {
-        return table;
-    }
-
     public Order_By_Node(RA_Tree left, List<OrderByElement> orderByElements, Table t) {
         this.left = left;
         left.setParent(this);
         this.orderByElements = orderByElements;
         schema = left.getSchema();
         table = t;
+    }
+
+    public List<OrderByElement> getOrderByElements() {
+        return orderByElements;
+    }
+
+    public Table getTable() {
+        return table;
     }
 
     public DB_Iterator get_iterator() {

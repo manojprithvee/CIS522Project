@@ -5,16 +5,8 @@ import com.database.helpers.Selection_Iterator;
 import net.sf.jsqlparser.expression.Expression;
 
 public class Select_Node extends RA_Tree {
-    private boolean optimize;
     public Expression where;
-
-    public Expression getWhere() {
-        return where;
-    }
-
-    public void setWhere(Expression where) {
-        this.where = where;
-    }
+    private boolean optimize;
 
     public Select_Node(RA_Tree left, Expression where) {
         this.left = left;
@@ -29,6 +21,14 @@ public class Select_Node extends RA_Tree {
         this.where = where;
         this.optimize = optimize;
         schema = left.getSchema();
+    }
+
+    public Expression getWhere() {
+        return where;
+    }
+
+    public void setWhere(Expression where) {
+        this.where = where;
     }
 
     public boolean isOptimize() {

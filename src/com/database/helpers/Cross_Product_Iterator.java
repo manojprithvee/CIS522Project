@@ -23,6 +23,7 @@ public class Cross_Product_Iterator implements DB_Iterator {
         rightIterator.reset();
         temp1 = leftIterator.next();
     }
+
     @Override
     public Object[] next() {
 

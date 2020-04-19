@@ -93,6 +93,7 @@ public class Grace_Join_Iterator implements DB_Iterator {
             temp2 = rightIterator.next();
         return output;
     }
+
     @Override
     public Table getTable() {
         return this.table;

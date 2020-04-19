@@ -7,15 +7,15 @@ import net.sf.jsqlparser.statement.select.Limit;
 public class Limit_Node extends RA_Tree {
     private final Limit limit;
 
-    public Limit getLimit() {
-        return limit;
-    }
-
     public Limit_Node(RA_Tree left, Limit limit) {
         this.left = left;
         this.limit = limit;
         left.setParent(this);
         schema = left.getSchema();
+    }
+
+    public Limit getLimit() {
+        return limit;
     }
 
     public DB_Iterator get_iterator() {
