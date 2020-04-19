@@ -1,8 +1,7 @@
 package com.database.helpers;
 
+import com.database.Evaluator;
 import com.database.aggregators.Aggregator;
-import com.database.sql.Evaluator;
-import com.database.sql.Storage;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.Function;
 import net.sf.jsqlparser.schema.Column;
@@ -15,14 +14,14 @@ import java.util.*;
 public class Group_By_Iterator implements DB_Iterator {
     private final LinkedHashMap<String, Integer> inSchema;
     private final ArrayList<Expression> outExpressions;
-    private final DB_Iterator iterator;
+    private final DB_Iterator left;
     private final Evaluator evaluator;
-    private HashMap<List<Object>, ArrayList<Storage>> buffer;
+    private HashMap<List<Object>, LinkedHashMap<Integer, Aggregator>> groups;
 
-    public Group_By_Iterator(DB_Iterator iterator,
+    public Group_By_Iterator(DB_Iterator left,
                              ArrayList<Expression> outExpressions,
                              LinkedHashMap<String, Integer> inSchema) {
-        this.iterator = iterator;
+        this.left = left;
         this.outExpressions = outExpressions;
         this.inSchema = inSchema;
         evaluator = new Evaluator(inSchema);
@@ -32,16 +31,16 @@ public class Group_By_Iterator implements DB_Iterator {
 
     @Override
     public Object[] next() {
-        if (buffer == null) return null;
-        if (buffer.isEmpty()) {
-            buffer = null;
+        if (groups == null) return null;
+        if (groups.isEmpty()) {
+            groups = null;
             return null;
         } else {
-            List<Object> row = buffer.keySet().iterator().next();
-            ArrayList<Storage> pairs = buffer.get(row);
-            buffer.remove(row);
-            for (Storage pair : pairs) {
-                row.set(pair.id, pair.function.output);
+            List<Object> row = groups.keySet().iterator().next();
+            LinkedHashMap<Integer, Aggregator> pairs = groups.get(row);
+            groups.remove(row);
+            for (Integer pair : pairs.keySet()) {
+                row.set(pair, pairs.get(pair).output);
             }
             return row.toArray();
         }
@@ -54,18 +53,17 @@ public class Group_By_Iterator implements DB_Iterator {
 
     @Override
     public void reset() {
-        if (buffer != null) return;
-        buffer = new HashMap<>();
-        Object[] inRow = this.iterator.next();
-        while (inRow != null) {
-            List<Object> outRow = Arrays.asList(new Object[outExpressions.size()]);
+        if (groups != null) return;
+        groups = new HashMap<>();
+        Object[] leftrows = left.next();
+        while (leftrows != null) {
+            List<Object> rightrows = Arrays.asList(new Object[outExpressions.size()]);
             ArrayList<Integer> indexes = new ArrayList<>();
-            evaluator.setTuple(inRow);
-//            System.out.println(Arrays.deepToString(inRow));
+            evaluator.setTuple(leftrows);
             for (int i = 0; i < outExpressions.size(); i++) {
                 if (outExpressions.get(i) instanceof Column) {
                     try {
-                        outRow.set(i, evaluator.eval(outExpressions.get(i)));
+                        rightrows.set(i, evaluator.eval(outExpressions.get(i)));
                     } catch (SQLException e) {
                         e.printStackTrace();
                     }
@@ -73,24 +71,20 @@ public class Group_By_Iterator implements DB_Iterator {
                     indexes.add(i);
                 }
             }
-            if (buffer.containsKey(outRow)) {
-                for (Storage pair : buffer.get(outRow))
-                    pair.function.get_results(inRow);
-                inRow = this.iterator.next();
+            if (groups.containsKey(rightrows)) {
+                for (Integer group : groups.get(rightrows).keySet())
+                    groups.get(rightrows).get(group).get_results(leftrows);
+                leftrows = left.next();
                 continue;
             }
-
-            ArrayList<Storage> pairs = new ArrayList<Storage>();
-
+            LinkedHashMap<Integer, Aggregator> rows = new LinkedHashMap<>();
             for (Integer i : indexes) {
                 Aggregator function = Aggregator.get_agg((Function) outExpressions.get(i), inSchema);
-                function.get_results(inRow);
-                Storage pair = new Storage(i, function);
-                pairs.add(pair);
+                function.get_results(leftrows);
+                rows.put(i, function);
             }
-
-            buffer.put(outRow, pairs);
-            inRow = this.iterator.next();
+            groups.put(rightrows, rows);
+            leftrows = left.next();
         }
     }
 }

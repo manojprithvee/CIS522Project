@@ -1,6 +1,5 @@
-package com.database.sql;
+package com.database;
 
-import com.database.Shared_Variables;
 import net.sf.jsqlparser.expression.*;
 import net.sf.jsqlparser.expression.operators.arithmetic.*;
 import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
@@ -14,7 +13,7 @@ import java.util.*;
 
 public class Organizer implements SelectVisitor, SelectItemVisitor, FromItemVisitor, ExpressionVisitor, ItemsListVisitor {
     private static final String WILDCARD = "*";
-    Set<String> columns = new HashSet<String>(), tables = new HashSet<String>(), wildcards = new HashSet<String>(), used_tables = new HashSet<String>();
+    public Set<String> columns = new HashSet<String>(), tables = new HashSet<String>(), wildcards = new HashSet<String>(), used_tables = new HashSet<String>();
     private Map<String, String> aliases = new HashMap<String, String>();
     SelectBody body;
 

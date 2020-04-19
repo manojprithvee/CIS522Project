@@ -20,4 +20,9 @@ public class Union_Node extends RA_Tree {
                 right.get_iterator()
         ));
     }
+
+    @Override
+    public String toString() {
+        return "U";
+    }
 }

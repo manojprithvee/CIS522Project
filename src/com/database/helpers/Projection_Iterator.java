@@ -1,7 +1,7 @@
 package com.database.helpers;
 
+import com.database.Evaluator;
 import com.database.RAtree.RA_Tree;
-import com.database.sql.Evaluator;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.Function;
 import net.sf.jsqlparser.schema.Column;

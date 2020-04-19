@@ -22,11 +22,11 @@ public class Grace_Join_Iterator implements DB_Iterator {
 
     public Grace_Join_Iterator(RA_Tree left, RA_Tree right,
                                int leftindex, int rightindex) {
-        this.rightIterator = right.get_iterator();
         this.leftIterator = left.get_iterator();
-        Object[] row = this.leftIterator.next();
-        rightIndex = rightindex;
+        this.rightIterator = right.get_iterator();
         leftIndex = leftindex;
+        rightIndex = rightindex;
+        Object[] row = this.leftIterator.next();
         map = new HashMap<>();
         while (row != null) {
             Object key = row[leftIndex];
@@ -88,7 +88,7 @@ public class Grace_Join_Iterator implements DB_Iterator {
                 }
             } while (temp1 == null);
         }
-        Object[] output = create_row(temp2, temp1);
+        Object[] output = create_row(temp1, temp2);
         if (!current_group_iterator.hasNext())
             temp2 = rightIterator.next();
         return output;

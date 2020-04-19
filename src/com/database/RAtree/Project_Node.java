@@ -1,10 +1,10 @@
 package com.database.RAtree;
 
+import com.database.builders.Select_Item_Builder;
 import com.database.helpers.Aggregate_Iterator;
 import com.database.helpers.DB_Iterator;
 import com.database.helpers.Group_By_Iterator;
 import com.database.helpers.Projection_Iterator;
-import com.database.sql.Select_Item_Builder;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.Function;
 import net.sf.jsqlparser.schema.Column;
@@ -55,7 +55,8 @@ public class Project_Node extends RA_Tree {
                 if (alias == null) alias = expression.toString();
                 if (expression instanceof Column) {
                     new_schema.put(((Column) expression).getWholeColumnName(), count);
-                    new_schema.put(((Column) expression).getTable().getName() + "." + alias, count);
+                    if (!((Column) expression).getWholeColumnName().equals(alias))
+                        new_schema.put(((Column) expression).getTable().getName() + "." + alias, count);
                 } else {
                     new_schema.put(table.getName() + "." + alias, count);
                 }
@@ -90,15 +91,12 @@ public class Project_Node extends RA_Tree {
 
     @Override
     public String toString() {
-        return "Project_Node{" +
-//                "inExpressions=" + inExpressions +
-//                ", body=" + body +
-//                ", table=" + table +
-//                ", isagg=" + isagg +
-//                ", isattribule=" + isattribule +
-                ", new_schema=" + new_schema +
-                ", new_schema=" + left.getSchema() +
-//                ", allColumns=" + allColumns +
-                '}';
+        if ((isattribule && isagg) || body.getGroupByColumnReferences() != null) {
+            return "γ " + body.getGroupByColumnReferences();
+        } else if (!isattribule && isagg) {
+            return "Σ";
+        } else {
+            return "π " + inExpressions;
+        }
     }
 }

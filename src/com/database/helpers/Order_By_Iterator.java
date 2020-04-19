@@ -1,7 +1,6 @@
 package com.database.helpers;
 
 import com.database.RAtree.RA_Tree;
-import com.database.sql.Row_Compare;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.select.OrderByElement;
 

@@ -16,8 +16,6 @@ public class Select_Node extends RA_Tree {
     }
 
     public Select_Node(RA_Tree left, Expression where) {
-        super();
-
         this.left = left;
         left.setParent(this);
         this.where = where;
@@ -40,8 +38,6 @@ public class Select_Node extends RA_Tree {
 
     @Override
     public String toString() {
-        return "Select_Node{" +
-                "where=" + where +
-                '}';
+        return "σ " + where;
     }
 }

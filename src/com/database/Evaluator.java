@@ -1,8 +1,8 @@
-package com.database.sql;
+package com.database;
 
 import com.database.RAtree.Distinct_Node;
 import com.database.RAtree.RA_Tree;
-import com.database.Shared_Variables;
+import com.database.builders.Build_Tree;
 import com.database.helpers.DB_Iterator;
 import com.database.helpers.Scan_Iterator;
 import net.sf.jsqlparser.eval.Eval;
@@ -55,7 +55,14 @@ public class Evaluator extends Eval {
         else if (structure.containsKey(Shared_Variables.rename.get(main_column.getColumnName()).toString()))
             id = structure.get(Shared_Variables.rename.get(main_column.getColumnName()).toString());
         else id = columnchange(id, main_column.getColumnName());
-        return (PrimitiveValue) row[id];
+        try {
+            return (PrimitiveValue) row[id];
+        } catch (Exception e) {
+            System.out.println(structure);
+            System.out.println(Arrays.deepToString(row));
+            System.out.println(main_column);
+            throw e;
+        }
     }
 
 
@@ -113,9 +120,9 @@ public class Evaluator extends Eval {
                     e.printStackTrace();
                 } finally {
                     try {
-                        printWriter.close();
-                        bufferedWriter.close();
-                        fileWriter.close();
+                        Objects.requireNonNull(printWriter).close();
+                        Objects.requireNonNull(bufferedWriter).close();
+                        Objects.requireNonNull(fileWriter).close();
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -144,8 +151,7 @@ public class Evaluator extends Eval {
     }
 
     public int columnchange(int id, String columnName) {
-        for (Iterator<String> iterator = structure.keySet().iterator(); iterator.hasNext(); ) {
-            String column = iterator.next();
+        for (String column : structure.keySet()) {
             String x = column.substring(column.indexOf(".") + 1);
             if (x.equals(columnName)) id = structure.get(column);
         }

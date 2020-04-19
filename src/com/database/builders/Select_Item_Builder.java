@@ -1,4 +1,4 @@
-package com.database.sql;
+package com.database.builders;
 
 import com.database.Shared_Variables;
 import net.sf.jsqlparser.schema.Column;

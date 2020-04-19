@@ -5,7 +5,6 @@ import com.database.helpers.Distinct_Iterator;
 
 public class Distinct_Node extends RA_Tree {
     public Distinct_Node(RA_Tree left) {
-        super();
         this.left = left;
         left.setParent(this);
         schema = left.getSchema();
@@ -17,6 +16,6 @@ public class Distinct_Node extends RA_Tree {
 
     @Override
     public String toString() {
-        return "Distinct_Node()";
+        return "δ";
     }
 }

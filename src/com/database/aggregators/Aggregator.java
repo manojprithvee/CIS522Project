@@ -1,6 +1,6 @@
 package com.database.aggregators;
 
-import com.database.sql.Evaluator;
+import com.database.Evaluator;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.Function;
 import net.sf.jsqlparser.expression.PrimitiveValue;

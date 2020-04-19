@@ -1,5 +1,6 @@
-package com.database.sql;
+package com.database.builders;
 
+import com.database.Optimize;
 import com.database.RAtree.RA_Tree;
 import com.database.RAtree.Scan_Node;
 import net.sf.jsqlparser.schema.Table;
@@ -15,11 +16,16 @@ public class FromItems_Builder implements FromItemVisitor {
     RA_Tree current;
     boolean flag;
     private LinkedHashMap<String, Integer> schema;
+    private long cost = 0L;
 
     public FromItems_Builder(FromItem fromItems) {
         this.fromItem = fromItems;
         this.flag = false;
         fromItems.accept(this);
+    }
+
+    public long getCost() {
+        return cost;
     }
 
     public FromItems_Builder(FromItem fromItems, boolean flag) {
@@ -48,17 +54,27 @@ public class FromItems_Builder implements FromItemVisitor {
             }
             current.setSchema(sschema);
         }
+        cost = 0L;
+        for (RA_Tree node : Optimize.getnodes(current, Scan_Node.class)) {
+            Scan_Node scan_node = (Scan_Node) node;
+            cost += scan_node.getSize();
+        }
     }
 
     @Override
     public void visit(Table table) {
-        current = new Scan_Node(table, flag);
+        Scan_Node scan_node = new Scan_Node(table, flag);
+        cost = scan_node.getSize();
+        current = scan_node;
+
     }
 
 
     @Override
     public void visit(SubJoin subJoin) {
-        current = new FromItems_Builder(subJoin.getJoin().getRightItem()).getCurrent();
+        FromItems_Builder form = new FromItems_Builder(subJoin.getJoin().getRightItem());
+        current = form.getCurrent();
+        cost = form.getCost();
     }
 
 }

@@ -1,7 +1,7 @@
 package com.database.helpers;
 
 
-import com.database.sql.Evaluator;
+import com.database.Evaluator;
 import net.sf.jsqlparser.expression.BooleanValue;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.schema.Table;

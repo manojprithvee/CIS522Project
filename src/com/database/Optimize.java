@@ -1,10 +1,9 @@
-package com.database.sql;
+package com.database;
 
 import com.database.RAtree.Cross_Product_Node;
 import com.database.RAtree.Join_Node;
 import com.database.RAtree.RA_Tree;
 import com.database.RAtree.Select_Node;
-import com.database.Shared_Variables;
 import net.sf.jsqlparser.expression.BinaryExpression;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
@@ -12,7 +11,10 @@ import net.sf.jsqlparser.expression.operators.relational.EqualsTo;
 import net.sf.jsqlparser.expression.operators.relational.InExpression;
 import net.sf.jsqlparser.schema.Column;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.List;
 
 public class Optimize {
     public static void selectionpushdown(RA_Tree abc) {
@@ -69,7 +71,8 @@ public class Optimize {
             if (join.getLeft() != null) join.getLeft().setParent(join);
             if (join.getRight() != null) join.getRight().setParent(join);
         }
-//        printtree(abc, true, "");
+//        TreePrinter.print(abc);
+
     }
 
     public static Select_Node getSelectParent(RA_Tree parent) {
@@ -78,22 +81,6 @@ public class Optimize {
         if ((((Select_Node) parent).where instanceof EqualsTo) && ((((EqualsTo) ((Select_Node) parent).where).getLeftExpression() instanceof Column) && (((EqualsTo) ((Select_Node) parent).where).getRightExpression() instanceof Column)))
             return (Select_Node) parent;
         else return getSelectParent(parent.getParent());
-    }
-
-
-    public static void printtree(RA_Tree root, boolean a, String text) {
-        if (root != null) {
-            if (a)
-                System.out.println(text + root.toString());
-            if ((root.getLeft() != null) && (root.getRight() != null)) {
-                String[] abc = {root.getLeft().toString() + "left", root.getRight().toString() + "right"};
-                System.out.println(Arrays.deepToString(abc));
-                printtree(root.getLeft(), false, "left");
-                printtree(root.getRight(), false, "right");
-            } else if (root.getLeft() != null) {
-                printtree(root.getLeft(), true, text);
-            }
-        }
     }
 
 

@@ -12,8 +12,8 @@ public class Cross_Product_Iterator implements DB_Iterator {
     private Object[] temp1;
 
     public Cross_Product_Iterator(RA_Tree left, RA_Tree right) {
-        this.leftIterator = right.get_iterator();
-        this.rightIterator = left.get_iterator();
+        this.leftIterator = left.get_iterator();
+        this.rightIterator = right.get_iterator();
         temp1 = leftIterator.next();
     }
 

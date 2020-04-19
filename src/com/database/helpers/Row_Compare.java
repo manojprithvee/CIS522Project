@@ -1,4 +1,4 @@
-package com.database.sql;
+package com.database.helpers;
 
 import net.sf.jsqlparser.expression.*;
 import net.sf.jsqlparser.schema.Column;

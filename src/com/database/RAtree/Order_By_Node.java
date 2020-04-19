@@ -20,7 +20,6 @@ public class Order_By_Node extends RA_Tree {
     }
 
     public Order_By_Node(RA_Tree left, List<OrderByElement> orderByElements, Table t) {
-        super();
         this.left = left;
         left.setParent(this);
         this.orderByElements = orderByElements;
@@ -34,9 +33,6 @@ public class Order_By_Node extends RA_Tree {
 
     @Override
     public String toString() {
-        return "Order_By_Node{" +
-                "orderByElements=" + orderByElements +
-                ", table=" + table +
-                '}';
+        return 'τ' + " " + orderByElements;
     }
 }

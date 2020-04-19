@@ -1,7 +1,10 @@
 package com.database.sql;
 
+import com.database.Optimize;
+import com.database.Organizer;
 import com.database.RAtree.RA_Tree;
 import com.database.Shared_Variables;
+import com.database.builders.Build_Tree;
 import com.database.helpers.DB_Iterator;
 import net.sf.jsqlparser.expression.StringValue;
 import net.sf.jsqlparser.statement.StatementVisitor;

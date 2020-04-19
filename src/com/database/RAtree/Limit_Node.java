@@ -12,7 +12,6 @@ public class Limit_Node extends RA_Tree {
     }
 
     public Limit_Node(RA_Tree left, Limit limit) {
-        super();
         this.left = left;
         this.limit = limit;
         left.setParent(this);
@@ -25,8 +24,6 @@ public class Limit_Node extends RA_Tree {
 
     @Override
     public String toString() {
-        return "Limit_Node{" +
-                "limit=" + limit +
-                '}';
+        return "lim";
     }
 }

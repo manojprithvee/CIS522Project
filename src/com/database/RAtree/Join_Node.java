@@ -1,11 +1,13 @@
 package com.database.RAtree;
 
 import com.database.helpers.DB_Iterator;
-import com.database.helpers.Grace_Join_Iterator;
+import com.database.helpers.External_Join_Iterator;
 import net.sf.jsqlparser.expression.BinaryExpression;
 import net.sf.jsqlparser.schema.Column;
 
+import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.Set;
 
 
 public class Join_Node extends RA_Tree {
@@ -26,17 +28,19 @@ public class Join_Node extends RA_Tree {
         left.setParent(this);
         right.setParent(this);
         this.expression = expression;
-        schema = create_new_schema(right.getSchema(), left.getSchema());
+        schema = create_new_schema(left.getSchema(), right.getSchema());
     }
 
     LinkedHashMap<String, Integer> create_new_schema(LinkedHashMap<String, Integer> leftSchema, LinkedHashMap<String, Integer> rightSchema) {
         LinkedHashMap<String, Integer> newSchema = new LinkedHashMap<>();
         LinkedHashMap<String, Integer> oldschema = leftSchema;
         int sizes = 0;
+        Set<Integer> a = new HashSet<>();
         for (String col : oldschema.keySet()) {
             newSchema.put(col, oldschema.get(col) + sizes);
+            a.add(oldschema.get(col) + sizes);
         }
-        sizes = newSchema.size();
+        sizes = a.size();
         oldschema = rightSchema;
         for (String col : oldschema.keySet()) {
             newSchema.put(col, oldschema.get(col) + sizes);
@@ -58,15 +62,11 @@ public class Join_Node extends RA_Tree {
             leftIndex = index;
             rightIndex = right.getSchema().get(c2);
         }
-        return new Grace_Join_Iterator(left, right, leftIndex, rightIndex);
+        return new External_Join_Iterator(left, right, leftIndex, rightIndex);
     }
 
     @Override
     public String toString() {
-        return "Join_Node{" +
-                "lefttable=" + left.getSchema() +
-                ", righttable=" + right.getSchema() +
-                ", schema=" + schema +
-                '}';
+        return "⋈ " + expression;
     }
 }
