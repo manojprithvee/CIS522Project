@@ -3,7 +3,6 @@ package com.database.helpers;
 import com.database.aggregators.Aggregator;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.Function;
-import net.sf.jsqlparser.expression.PrimitiveValue;
 import net.sf.jsqlparser.schema.Table;
 
 import java.util.ArrayList;
@@ -31,20 +30,23 @@ public class Aggregate_Iterator implements DB_Iterator {
     public Object[] next() {
 
         Object[] result = new Object[aggregator.size()];
+
+        Object[] tuple = oper.next();
+        Aggregator[] agg = new Aggregator[aggregator.size()];
         int count = 0;
         for (Expression function : aggregator) {
-            if (function instanceof Function) {
-                Aggregator abc = Aggregator.get_agg((Function) function, lastschema);
-                PrimitiveValue output = null;
-                Object[] tuple = oper.next();
-                while (tuple != null) {
-                    output = abc.get_results(tuple);
-                    tuple = oper.next();
+            agg[count] = Aggregator.get_agg((Function) function, lastschema);
+            count++;
+        }
+        while (tuple != null) {
+            count = 0;
+            for (Expression function : aggregator) {
+                if (function instanceof Function) {
+                    result[count] = agg[count].get_results(tuple);
                 }
-                result[count] = output;
                 count++;
-                oper.reset();
             }
+            tuple = oper.next();
         }
         if (output) {
             output = false;
