@@ -96,7 +96,7 @@ public class Project_Node extends RA_Tree {
         if ((isattribule && isagg) || body.getGroupByColumnReferences() != null) {
             return "γ " + body.getGroupByColumnReferences();
         } else if (!isattribule && isagg) {
-            return "Σ";
+            return "Σ" + left.getSchema();
         } else {
             return "π " + inExpressions;
         }

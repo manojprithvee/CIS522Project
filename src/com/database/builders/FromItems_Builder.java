@@ -50,7 +50,7 @@ public class FromItems_Builder implements FromItemVisitor {
         if (subSelect.getAlias() != null) {
             LinkedHashMap<String, Integer> sschema = new LinkedHashMap<>();
             for (var i : Build_Tree.getSchema().keySet()) {
-                sschema.put(subSelect.getAlias() + "." + i.split("\\.")[1], Build_Tree.getSchema().get(i));
+                sschema.put(subSelect.getAlias().toUpperCase() + "." + i.split("\\.")[1].toUpperCase(), Build_Tree.getSchema().get(i));
             }
             current.setSchema(sschema);
         }

@@ -182,13 +182,15 @@ public class Organizer implements SelectVisitor, SelectItemVisitor, FromItemVisi
 
     @Override
     public void visit(Column column) {
-        if (aliases.containsKey(column.getTable().toString())) {
+        column.setColumnName(column.getColumnName().toUpperCase());
+        if (column.getTable() != null && column.getTable().getName() != null)
+            column.getTable().setName(column.getTable().getName().toUpperCase());
+        if (aliases.containsKey(column.getTable().toString().toUpperCase())) {
             String tableName = column.getTable().getWholeTableName().toUpperCase();
             if (aliases.containsKey(tableName)) {
                 column.getTable().setName(aliases.get(tableName));
             }
         }
-
         for (String table : tables) {
             String temp = get(Shared_Variables.list_tables.get(table.toUpperCase()), column);
             if (!temp.equals("")) {

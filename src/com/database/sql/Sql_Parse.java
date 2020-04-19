@@ -92,14 +92,14 @@ public class Sql_Parse implements StatementVisitor {
 
     @Override
     public void visit(CreateTable createTable) {
-        String tableName = createTable.getTable().getName();
+        String tableName = createTable.getTable().getName().toUpperCase();
         LinkedHashMap<String, Integer> cols = new LinkedHashMap<>();
         ArrayList<String> dataType = new ArrayList<>();
         if (!Shared_Variables.list_tables.containsKey(tableName)) {
             List<ColumnDefinition> lists = createTable.getColumnDefinitions();
             int i = 0;
             for (ColumnDefinition list : lists) {
-                cols.put(tableName + "." + list.getColumnName(), i);
+                cols.put(tableName + "." + list.getColumnName().toUpperCase(), i);
                 dataType.add(list.getColDataType().toString());
                 i++;
             }

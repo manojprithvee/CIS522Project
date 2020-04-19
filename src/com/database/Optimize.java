@@ -1,33 +1,33 @@
 package com.database;
 
-import com.database.RAtree.Cross_Product_Node;
-import com.database.RAtree.Join_Node;
-import com.database.RAtree.RA_Tree;
-import com.database.RAtree.Select_Node;
+import com.database.RAtree.*;
 import net.sf.jsqlparser.expression.BinaryExpression;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
+import net.sf.jsqlparser.expression.operators.conditional.OrExpression;
 import net.sf.jsqlparser.expression.operators.relational.EqualsTo;
 import net.sf.jsqlparser.expression.operators.relational.InExpression;
 import net.sf.jsqlparser.schema.Column;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.List;
+import java.util.*;
 
 public class Optimize {
-    public static void selectionpushdown(RA_Tree abc) {
+    public static RA_Tree selectionpushdown(RA_Tree abc) {
         List<RA_Tree> selectNodes = Optimize.getnodes(abc, Select_Node.class);
 //                printtree(abc, true, "");
+        List<Select_Node> or_only = new ArrayList<>();
         for (RA_Tree node : selectNodes) {
             Select_Node select = (Select_Node) node;
             if (select.where instanceof BinaryExpression) {
                 BinaryExpression where = (BinaryExpression) select.where;
+//                List<Expression> new_ands = splitconditions(where);
                 for (Expression expression : splitconditions(where)) {
                     List<Column> column_used = getcolumnused(expression);
                     RA_Tree lowestChild = getLowestChild(select.getLeft(), column_used);
                     Select_Node new_select = new Select_Node(lowestChild, expression, true);
+                    if (expression instanceof OrExpression) {
+                        or_only.add(new_select);
+                    }
                     RA_Tree parent = lowestChild.getParent();
                     if (parent.getLeft() == lowestChild) {
                         parent.setLeft(new_select);
@@ -39,8 +39,13 @@ public class Optimize {
                     new_select.setSchema(lowestChild.getSchema());
                 }
             }
-            select.getParent().setLeft(select.getLeft());
-            select.getLeft().setParent(select.getParent());
+            if (select.getParent() != null) {
+                select.getParent().setLeft(select.getLeft());
+                select.getLeft().setParent(select.getParent());
+            } else {
+                select.getLeft().setParent(null);
+                abc = select.getLeft();
+            }
         }
         List<RA_Tree> crossNodes = Optimize.getnodes(abc, Cross_Product_Node.class);
         for (RA_Tree node : crossNodes) {
@@ -52,27 +57,63 @@ public class Optimize {
             if (parent != null) {
                 if (parent.getLeft() == selectnode) parent.setLeft(child);
                 else parent.setRight(child);
+            } else {
+                abc = child;
+                child.setParent(null);
             }
             if (child != null) child.setParent(parent);
             parent = node.getParent();
             child = node.getLeft();
+            boolean join_flag = true;
+            Join_Node join = null;
             if (parent != null) {
                 if (parent.getLeft() == node) parent.setLeft(child);
                 else parent.setRight(child);
+            } else {
+                abc = new Join_Node(node.getLeft(), node.getRight(), (BinaryExpression) selectnode.where);
+                join = (Join_Node) abc;
+                join_flag = false;
             }
             if (child != null) child.setParent(parent);
             parent = node.getLeft().getParent();
-            Join_Node join = new Join_Node(node.getLeft(), node.getRight(), (BinaryExpression) selectnode.where);
+            if (join_flag) {
+                join = new Join_Node(node.getLeft(), node.getRight(), (BinaryExpression) selectnode.where);
+            }
             join.setParent(parent);
             if (join.getParent() != null) {
                 if (join.getParent().getLeft() == join.getLeft()) join.getParent().setLeft(join);
                 else join.getParent().setRight(join);
             }
-            if (join.getLeft() != null) join.getLeft().setParent(join);
-            if (join.getRight() != null) join.getRight().setParent(join);
+        }
+
+        List<Expression> list = new ArrayList<>();
+        for (Select_Node node : or_only) {
+            RA_Tree parent = node.getParent();
+
+            RA_Tree output = null;
+            for (Expression i : split_or_conditions(node.getWhere())) {
+                RA_Tree new_tree = copytree(node.getLeft());
+                Select_Node new_select = new Select_Node(new_tree, i);
+                RA_Tree new_select_optimized = selectionpushdown(new_select);
+                if (output == null) {
+                    output = new_select_optimized;
+                } else {
+                    output = new Union_Or_Node(output, new_select);
+                }
+
+            }
+            if (parent.getLeft() == node) {
+                parent.setLeft(output);
+                output.setParent(parent);
+            } else {
+                parent.setRight(output);
+                output.setParent(parent);
+            }
         }
 //        TreePrinter.print(abc);
+        return abc;
 
+//        System.exit(9);
     }
 
     public static Select_Node getSelectParent(RA_Tree parent) {
@@ -81,6 +122,46 @@ public class Optimize {
         if ((((Select_Node) parent).where instanceof EqualsTo) && ((((EqualsTo) ((Select_Node) parent).where).getLeftExpression() instanceof Column) && (((EqualsTo) ((Select_Node) parent).where).getRightExpression() instanceof Column)))
             return (Select_Node) parent;
         else return getSelectParent(parent.getParent());
+    }
+
+    public static RA_Tree copytree(RA_Tree root) {
+        if (root instanceof Cross_Product_Node) {
+            return new Cross_Product_Node(Objects.requireNonNull(copytree(root.getLeft())), Objects.requireNonNull(copytree(root.getRight())));
+        } else if (root instanceof Distinct_Node) {
+            return new Distinct_Node(Objects.requireNonNull(copytree(root.getLeft())));
+        } else if (root instanceof Join_Node) {
+            return new Join_Node(Objects.requireNonNull(copytree(root.getLeft())), Objects.requireNonNull(copytree(root.getRight())), ((Join_Node) root).getExpression());
+        } else if (root instanceof Limit_Node) {
+            return new Limit_Node(Objects.requireNonNull(copytree(root.getLeft())), ((Limit_Node) root).getLimit());
+        } else if (root instanceof Order_By_Node) {
+            return new Order_By_Node(Objects.requireNonNull(copytree(root.getLeft())), ((Order_By_Node) root).getOrderByElements(), ((Order_By_Node) root).getTable());
+        } else if (root instanceof Project_Node) {
+            return new Project_Node(Objects.requireNonNull(copytree(root.getLeft())), ((Project_Node) root).getBody(), ((Project_Node) root).getTable());
+        } else if (root instanceof Select_Node) {
+            return new Select_Node(Objects.requireNonNull(copytree(root.getLeft())), ((Select_Node) root).getWhere());
+        } else if (root instanceof Union_Node) {
+            return new Union_Node(Objects.requireNonNull(copytree(root.getLeft())), Objects.requireNonNull(copytree(root.getRight())));
+        } else if (root instanceof Scan_Node) {
+            return new Scan_Node(((Scan_Node) root).getTable(), ((Scan_Node) root).isFlag());
+        } else if (root instanceof Union_Or_Node) {
+            return new Union_Or_Node(Objects.requireNonNull(copytree(root.getLeft())), Objects.requireNonNull(copytree(root.getRight())));
+        }
+        return null;
+    }
+
+    public static void printtree(RA_Tree root, boolean a, String text) {
+        if (root != null) {
+            if (a)
+                System.out.println(text + root.toString());
+            if ((root.getLeft() != null) && (root.getRight() != null)) {
+                String[] abc = {root.getLeft().toString() + "left", root.getRight().toString() + "right"};
+                System.out.println(Arrays.deepToString(abc));
+                printtree(root.getLeft(), false, "left");
+                printtree(root.getRight(), false, "right");
+            } else if (root.getLeft() != null) {
+                printtree(root.getLeft(), true, text);
+            }
+        }
     }
 
 
@@ -159,6 +240,21 @@ public class Optimize {
         }
         return (list);
 
+    }
+
+    public static List<Expression> split_or_conditions(Expression where) {
+        List<Expression> list = new ArrayList<>();
+        Expression right = ((BinaryExpression) where).getRightExpression();
+        Expression left = ((BinaryExpression) where).getLeftExpression();
+        if (left instanceof OrExpression)
+            list.addAll(split_or_conditions(left));
+        else
+            list.add(left);
+        if (right instanceof OrExpression)
+            list.addAll(split_or_conditions(right));
+        else
+            list.add(right);
+        return (list);
     }
 
     public static boolean get(LinkedHashMap structure, Column main_column) {

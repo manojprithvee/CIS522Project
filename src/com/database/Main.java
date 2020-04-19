@@ -23,7 +23,7 @@ public class Main {
                 String[] arrOfStr = str.split(";");
                 for (String s : arrOfStr) {
                     if (!s.strip().equals("")) {
-                        Reader input = new StringReader(s.toUpperCase());
+                        Reader input = new StringReader(s);
                         CCJSqlParser parser = new CCJSqlParser(input);
                         try {
 //                            long startTime = System.currentTimeMillis();
