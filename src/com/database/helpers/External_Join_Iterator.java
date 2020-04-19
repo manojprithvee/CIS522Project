@@ -6,11 +6,15 @@ import net.sf.jsqlparser.schema.Table;
 import java.util.*;
 
 public class External_Join_Iterator implements DB_Iterator {
-    private final DB_Iterator rightIterator;
-    private final Map<Object, ArrayList<Object[]>> leftmap, rightmap;
+    private final RA_Tree left;
+    private final RA_Tree right;
+    private final ArrayList<Object[]> buffer;
+    private DB_Iterator rightIterator;
+    private Map<Object, ArrayList<Object[]>> leftmap;
+    private Map<Object, ArrayList<Object[]>> rightmap;
     private final ArrayList<Object> keys;
-    private final Iterator<Object[]> bufferintrator;
-    DB_Iterator leftIterator;
+    private Iterator<Object[]> bufferintrator;
+    private DB_Iterator leftIterator;
     private Iterator<Object[]> left_list;
     private Iterator<Object[]> right_list;
     private Object key;
@@ -18,6 +22,8 @@ public class External_Join_Iterator implements DB_Iterator {
 
     public External_Join_Iterator(RA_Tree left, RA_Tree right,
                                   int leftindex, int rightindex) {
+        this.left = left;
+        this.right = right;
         this.leftIterator = left.get_iterator();
         this.rightIterator = right.get_iterator();
         Object[] row = this.leftIterator.next();
@@ -34,7 +40,6 @@ public class External_Join_Iterator implements DB_Iterator {
             leftmap.put(key, abc);
             row = this.leftIterator.next();
         }
-//        System.out.println(leftmap);
         row = this.rightIterator.next();
         rightmap = new HashMap<>();
         while (row != null) {
@@ -49,11 +54,13 @@ public class External_Join_Iterator implements DB_Iterator {
             rightmap.put(key, abc);
             row = this.rightIterator.next();
         }
-//        System.out.println(rightmap);
+        this.leftIterator = null;
+        this.rightIterator = null;
+
         leftmap.keySet().retainAll(rightmap.keySet());
         rightmap.keySet().retainAll(leftmap.keySet());
         Set<Object> setkeys = leftmap.keySet();
-        ArrayList<Object[]> buffer = new ArrayList<>();
+        buffer = new ArrayList<>();
         keys = new ArrayList<Object>(setkeys);
         for (Object key : keys) {
             left_list = leftmap.get(key).iterator();
@@ -69,6 +76,8 @@ public class External_Join_Iterator implements DB_Iterator {
             leftmap.remove(key);
             rightmap.remove(key);
         }
+        leftmap = null;
+        rightmap = null;
         bufferintrator = buffer.iterator();
     }
 
@@ -90,14 +99,14 @@ public class External_Join_Iterator implements DB_Iterator {
 
     @Override
     public void reset() {
-        leftIterator.reset();
-        rightIterator.reset();
+        bufferintrator = buffer.iterator();
     }
 
     @Override
     public Object[] next() {
         if (bufferintrator.hasNext())
             return bufferintrator.next();
+
         return null;
     }
 

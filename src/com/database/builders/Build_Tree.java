@@ -66,13 +66,10 @@ public class Build_Tree implements SelectVisitor {
         if (plainSelect.getOrderByElements() != null)
             root = new Order_By_Node(root, plainSelect.getOrderByElements(), t);
         if (plainSelect.getDistinct() != null) root = new Distinct_Node(root);
-//        System.out.println("distinct");
         if (plainSelect.getLimit() != null) root = new Limit_Node(root, plainSelect.getLimit());
-//        System.out.println("limit");
     }
 
     public RA_Tree build_from_joins(FromItem fromItem, List<Join> joins) {
-        long startTime = System.currentTimeMillis();
         RA_Tree output = null;
         List<List_Tables> tables = new ArrayList<>();
         FromItems_Builder node = new FromItems_Builder(fromItem);
@@ -85,9 +82,7 @@ public class Build_Tree implements SelectVisitor {
                 tables.add(temp);
             }
         }
-        System.out.println(tables);
         Collections.sort(tables);
-        System.out.println(tables);
         for (List_Tables table : tables) {
             RA_Tree left, right;
             if (output != null) {
@@ -104,35 +99,8 @@ public class Build_Tree implements SelectVisitor {
                 output = table.current;
             }
         }
-        long stopTime = System.currentTimeMillis();
-        System.out.println(stopTime - startTime);
         return output;
     }
-//    public RA_Tree build_from_joins(FromItem fromItem, List<Join> joins) {
-//        RA_Tree output = null;
-//        if (joins == null) {
-//            return new FromItems_Builder(fromItem).getCurrent();
-//        }
-//        for (Join join : joins) {
-//            RA_Tree left;
-//            if (output != null) {
-//                left = output;
-//            } else {
-//                left = new FromItems_Builder(fromItem, true).getCurrent();
-//            }
-//            Expression expression = join.getOnExpression();
-//            RA_Tree right = new FromItems_Builder(join.getRightItem()).getCurrent();
-//            if (expression != null) {
-//                output = new Join_Node(left, right, (BinaryExpression) expression);
-//            } else {
-//                output = new Cross_Product_Node(left, right);
-//            }
-//            left.setParent(output);
-//            right.setParent(output);
-//        }
-//
-//        return output;
-//    }
 }
 
 class List_Tables implements Comparable {

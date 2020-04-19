@@ -106,7 +106,7 @@ public class Scan_Iterator implements DB_Iterator {
                     break;
             }
         }
-//        System.out.println(Arrays.deepToString(row));
+
         line = null;
         return row;
 
