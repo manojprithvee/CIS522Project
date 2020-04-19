@@ -5,6 +5,7 @@ import net.sf.jsqlparser.expression.BinaryExpression;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
 import net.sf.jsqlparser.expression.operators.conditional.OrExpression;
+import net.sf.jsqlparser.expression.operators.relational.Between;
 import net.sf.jsqlparser.expression.operators.relational.EqualsTo;
 import net.sf.jsqlparser.expression.operators.relational.InExpression;
 import net.sf.jsqlparser.schema.Column;
@@ -98,7 +99,7 @@ public class Optimize {
                 if (output == null) {
                     output = new_select_optimized;
                 } else {
-                    output = new Union_Or_Node(output, new_select);
+                    output = new Union_Or_Node(output, new_select_optimized);
                 }
 
             }
@@ -203,6 +204,17 @@ public class Optimize {
             if (expression.getLeftExpression() instanceof Column) {
                 Column leftcolumn = (Column) expression.getLeftExpression();
                 list.add(leftcolumn);
+            }
+        }
+        if (givenexpression instanceof Between) {
+            Between expression = (Between) givenexpression;
+            if (expression.getLeftExpression() instanceof Column) {
+                Column leftcolumn = (Column) expression.getLeftExpression();
+                list.add(leftcolumn);
+            } else {
+                if (expression.getLeftExpression() instanceof BinaryExpression) {
+                    list.addAll(getcolumnused(expression.getLeftExpression()));
+                }
             }
         }
         return list;
