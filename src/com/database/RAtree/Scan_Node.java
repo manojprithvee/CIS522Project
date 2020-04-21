@@ -2,7 +2,7 @@ package com.database.RAtree;
 
 import com.database.Shared_Variables;
 import com.database.helpers.DB_Iterator;
-import com.database.helpers.Table_Iterator;
+import com.database.helpers.Scan_Iterator;
 import net.sf.jsqlparser.schema.Table;
 
 import java.io.File;
@@ -61,7 +61,7 @@ public class Scan_Node extends RA_Tree {
 
     @Override
     public DB_Iterator get_iterator() {
-        return new Table_Iterator(new File(tableFile), table, flag, schema);
+        return new Scan_Iterator(new File(tableFile), table, flag, schema);
     }
 
     @Override

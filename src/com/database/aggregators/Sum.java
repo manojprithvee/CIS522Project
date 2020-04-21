@@ -16,6 +16,7 @@ public class Sum extends Aggregator {
     }
 
     public PrimitiveValue get_results(Object[] row) {
+
         if (row != null) {
             evaluator.setTuple(row);
 

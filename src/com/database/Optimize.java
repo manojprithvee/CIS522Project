@@ -111,7 +111,6 @@ public class Optimize {
                 output.setParent(parent);
             }
         }
-//        TreePrinter.print(abc);
         return abc;
 
 //        System.exit(9);

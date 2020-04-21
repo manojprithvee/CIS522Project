@@ -1,6 +1,7 @@
 package com.database.helpers;
 
 import com.database.RAtree.RA_Tree;
+import com.database.Shared_Variables;
 import net.sf.jsqlparser.schema.Table;
 
 import java.util.ArrayList;
@@ -22,6 +23,7 @@ public class Grace_Join_Iterator implements DB_Iterator {
 
     public Grace_Join_Iterator(RA_Tree left, RA_Tree right,
                                int leftindex, int rightindex) {
+
         this.leftIterator = left.get_iterator();
         this.rightIterator = right.get_iterator();
         leftIndex = leftindex;
@@ -44,18 +46,10 @@ public class Grace_Join_Iterator implements DB_Iterator {
     }
 
     public Object[] create_row(Object[] left, Object[] right) {
-
-        int index = 0;
         if (left == null || right == null) return null;
         Object[] new_row = new Object[left.length + right.length];
-        for (Object o : left) {
-            new_row[index] = o;
-            index++;
-        }
-        for (Object o : right) {
-            new_row[index] = o;
-            index++;
-        }
+        System.arraycopy(left, 0, new_row, 0, left.length);
+        System.arraycopy(right, 0, new_row, left.length, right.length);
         return new_row;
     }
 
@@ -88,7 +82,7 @@ public class Grace_Join_Iterator implements DB_Iterator {
                 }
             } while (temp1 == null);
         }
-        Object[] output = create_row(temp1, temp2);
+        Object[] output = Shared_Variables.create_row(temp1, temp2);
         if (!current_group_iterator.hasNext())
             temp2 = rightIterator.next();
         return output;

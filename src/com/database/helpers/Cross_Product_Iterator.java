@@ -1,6 +1,7 @@
 package com.database.helpers;
 
 import com.database.RAtree.RA_Tree;
+import com.database.Shared_Variables;
 import net.sf.jsqlparser.schema.Table;
 
 public class Cross_Product_Iterator implements DB_Iterator {
@@ -38,23 +39,7 @@ public class Cross_Product_Iterator implements DB_Iterator {
             rightIterator.reset();
             temp2 = rightIterator.next();
         }
-        return create_row(temp1, temp2);
-    }
-
-
-    public Object[] create_row(Object[] left, Object[] right) {
-        int index = 0;
-        if (left == null || right == null) return null;
-        Object[] new_row = new Object[left.length + right.length];
-        for (Object o : left) {
-            new_row[index] = o;
-            index++;
-        }
-        for (Object o : right) {
-            new_row[index] = o;
-            index++;
-        }
-        return new_row;
+        return Shared_Variables.create_row(temp1, temp2);
     }
 
     @Override

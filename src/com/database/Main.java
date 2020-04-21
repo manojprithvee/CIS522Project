@@ -26,11 +26,11 @@ public class Main {
                         Reader input = new StringReader(s);
                         CCJSqlParser parser = new CCJSqlParser(input);
                         try {
-//                            long startTime = System.currentTimeMillis();
+                            long startTime = System.currentTimeMillis();
                             Statement stmt = parser.Statement();
                             stmt.accept(new Sql_Parse());
-//                            long stopTime = System.currentTimeMillis();
-//                            System.out.println(stopTime - startTime);
+                            long stopTime = System.currentTimeMillis();
+                            System.out.println(stopTime - startTime);
                         } catch (Exception e) {
                             System.out.println("SQL syntax error"); //$NON-NLS-1$
                             e.printStackTrace();

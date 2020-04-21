@@ -13,7 +13,7 @@ import java.util.*;
 
 public class Group_By_Iterator implements DB_Iterator {
     private final LinkedHashMap<String, Integer> inSchema;
-    private final ArrayList<Expression> outExpressions;
+    private final ArrayList<Expression> newprojection;
     private final DB_Iterator left;
     private final Evaluator evaluator;
     private HashMap<List<Object>, HashMap<Integer, Aggregator>> groups;
@@ -22,7 +22,7 @@ public class Group_By_Iterator implements DB_Iterator {
                              ArrayList<Expression> outExpressions,
                              LinkedHashMap<String, Integer> inSchema) {
         this.left = left;
-        this.outExpressions = outExpressions;
+        this.newprojection = outExpressions;
         this.inSchema = inSchema;
         evaluator = new Evaluator(inSchema);
         reset();
@@ -57,13 +57,13 @@ public class Group_By_Iterator implements DB_Iterator {
         groups = new HashMap<>();
         Object[] leftrows = left.next();
         while (leftrows != null) {
-            List<Object> rightrows = Arrays.asList(new Object[outExpressions.size()]);
+            List<Object> rightrows = Arrays.asList(new Object[newprojection.size()]);
             ArrayList<Integer> indexes = new ArrayList<>();
             evaluator.setTuple(leftrows);
-            for (int i = 0; i < outExpressions.size(); i++) {
-                if (outExpressions.get(i) instanceof Column) {
+            for (int i = 0; i < newprojection.size(); i++) {
+                if (newprojection.get(i) instanceof Column) {
                     try {
-                        rightrows.set(i, evaluator.eval(outExpressions.get(i)));
+                        rightrows.set(i, evaluator.eval(newprojection.get(i)));
                     } catch (SQLException e) {
                         e.printStackTrace();
                     }
@@ -79,7 +79,7 @@ public class Group_By_Iterator implements DB_Iterator {
             }
             HashMap<Integer, Aggregator> rows = new HashMap<>();
             for (Integer i : indexes) {
-                Aggregator function = Aggregator.get_agg((Function) outExpressions.get(i), inSchema);
+                Aggregator function = Aggregator.get_agg((Function) newprojection.get(i), inSchema);
                 function.get_results(leftrows);
                 rows.put(i, function);
             }

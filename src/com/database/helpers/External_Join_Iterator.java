@@ -1,6 +1,7 @@
 package com.database.helpers;
 
 import com.database.RAtree.RA_Tree;
+import com.database.Shared_Variables;
 import net.sf.jsqlparser.schema.Table;
 
 import java.util.*;
@@ -29,6 +30,7 @@ public class External_Join_Iterator implements DB_Iterator {
             row = leftIterator.next();
         }
         row = rightIterator.next();
+
         Map<Object, ArrayList<Object[]>> rightmap = new HashMap<>();
         while (row != null) {
             Object key = row[rightindex];
@@ -42,6 +44,7 @@ public class External_Join_Iterator implements DB_Iterator {
             rightmap.put(key, abc);
             row = rightIterator.next();
         }
+
         leftIterator = null;
         rightIterator = null;
 
@@ -57,7 +60,7 @@ public class External_Join_Iterator implements DB_Iterator {
                 Object[] leftrow = left_list.next();
                 while (right_list.hasNext()) {
                     Object[] rightrow = right_list.next();
-                    buffer.add(create_row(leftrow, rightrow));
+                    buffer.add(Shared_Variables.create_row(leftrow, rightrow));
                 }
                 right_list = rightmap.get(key).iterator();
             }
@@ -66,22 +69,15 @@ public class External_Join_Iterator implements DB_Iterator {
         }
         leftmap = null;
         rightmap = null;
+
         bufferintrator = buffer.iterator();
     }
 
     public Object[] create_row(Object[] left, Object[] right) {
-
-        int index = 0;
         if (left == null || right == null) return null;
         Object[] new_row = new Object[left.length + right.length];
-        for (Object o : left) {
-            new_row[index] = o;
-            index++;
-        }
-        for (Object o : right) {
-            new_row[index] = o;
-            index++;
-        }
+        System.arraycopy(left, 0, new_row, 0, left.length);
+        System.arraycopy(right, 0, new_row, left.length, right.length);
         return new_row;
     }
 
