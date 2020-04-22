@@ -7,7 +7,10 @@ import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.select.*;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
 
 public class Build_Tree implements SelectVisitor {
     private RA_Tree root;
@@ -60,13 +63,17 @@ public class Build_Tree implements SelectVisitor {
         if (!(plainSelect.getFromItem() instanceof SubSelect))
             t = (Table) plainSelect.getFromItem();
         root = build_from_joins(plainSelect.getFromItem(), plainSelect.getJoins());
-        if (plainSelect.getWhere() != null) root = new Select_Node(root, plainSelect.getWhere());
+        if (plainSelect.getWhere() != null)
+            root = new Select_Node(root, plainSelect.getWhere());
         root = new Project_Node(root, plainSelect, t);
-        if (plainSelect.getHaving() != null) root = new Select_Node(root, plainSelect.getHaving());
+        if (plainSelect.getHaving() != null)
+            root = new Select_Node(root, plainSelect.getHaving());
         if (plainSelect.getOrderByElements() != null)
             root = new Order_By_Node(root, plainSelect.getOrderByElements(), t);
-        if (plainSelect.getDistinct() != null) root = new Distinct_Node(root);
-        if (plainSelect.getLimit() != null) root = new Limit_Node(root, plainSelect.getLimit());
+        if (plainSelect.getDistinct() != null)
+            root = new Distinct_Node(root);
+        if (plainSelect.getLimit() != null)
+            root = new Limit_Node(root, plainSelect.getLimit());
     }
 
     public RA_Tree build_from_joins(FromItem fromItem, List<Join> joins) {
@@ -82,7 +89,6 @@ public class Build_Tree implements SelectVisitor {
                 tables.add(temp);
             }
         }
-        Collections.sort(tables);
         for (List_Tables table : tables) {
             RA_Tree left, right;
             if (output != null) {
@@ -119,11 +125,5 @@ class List_Tables implements Comparable {
             return 1;
         }
         return -1;
-    }
-
-    @Override
-    public String toString() {
-        return "cost=" + cost.toString() +
-                ",current=" + current.toString();
     }
 }

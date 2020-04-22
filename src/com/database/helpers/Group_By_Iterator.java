@@ -26,7 +26,6 @@ public class Group_By_Iterator implements DB_Iterator {
         this.inSchema = inSchema;
         evaluator = new Evaluator(inSchema);
         reset();
-//        System.out.println("group");
     }
 
     @Override
@@ -80,8 +79,10 @@ public class Group_By_Iterator implements DB_Iterator {
             HashMap<Integer, Aggregator> rows = new HashMap<>();
             for (Integer i : indexes) {
                 Aggregator function = Aggregator.get_agg((Function) newprojection.get(i), inSchema);
-                function.get_results(leftrows);
-                rows.put(i, function);
+                if (function != null) {
+                    function.get_results(leftrows);
+                    rows.put(i, function);
+                }
             }
             groups.put(rightrows, rows);
             leftrows = left.next();

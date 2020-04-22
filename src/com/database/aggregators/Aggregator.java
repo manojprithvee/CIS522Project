@@ -20,7 +20,7 @@ public abstract class Aggregator {
     }
 
     public static Aggregator get_agg(Function f, LinkedHashMap<String, Integer> schema) {
-        String fname = f.getName();
+        String fname = f.getName().toUpperCase();
         if (fname.contains("SUM")) {
             return new Sum(f.getParameters().getExpressions().get(0), schema);
         } else if (fname.contains("MAX")) {

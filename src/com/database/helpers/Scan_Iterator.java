@@ -56,8 +56,6 @@ public class Scan_Iterator implements DB_Iterator {
     public void reset() {
         try {
             br = new NewBufferedReader(new FileReader(file), 5242880);
-
-//             scnr = new Scanner(file);
         } catch (IOException e) {
             System.out.println("error");
         }
@@ -75,6 +73,7 @@ public class Scan_Iterator implements DB_Iterator {
         }
         if (off == 0)
             return new String[]{string};
+        list.add(string.substring(off));
         int resultSize = list.size();
         String[] result = new String[resultSize];
         return list.toArray(result);
@@ -92,15 +91,10 @@ public class Scan_Iterator implements DB_Iterator {
             return null;
 
         String[] line = split(raw_line, '|');
-
-        if (line == null)
-            return null;
         Object[] row;
         ArrayList<String> dataType;
-
         dataType = Shared_Variables.schema_store.get(table.getName().toUpperCase());
         row = new Object[index.size()];
-
         for (int i = 0; i < schema.size(); i++) {
             Integer id = index.get(i);
             if (id == null) continue;
@@ -120,7 +114,6 @@ public class Scan_Iterator implements DB_Iterator {
                     break;
             }
         }
-
         return row;
     }
 

@@ -1,9 +1,9 @@
 package com.database.aggregators;
 
-import net.sf.jsqlparser.expression.DoubleValue;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.LongValue;
 import net.sf.jsqlparser.expression.PrimitiveValue;
+import net.sf.jsqlparser.expression.operators.arithmetic.Addition;
 
 import java.sql.SQLException;
 import java.util.LinkedHashMap;
@@ -28,15 +28,8 @@ public class Sum extends Aggregator {
                     e.printStackTrace();
                 }
             }
-            if (isLong == null) isLong = output instanceof LongValue;
             try {
-                if (isLong) {
-                    ((LongValue) output).setValue(((LongValue) output).getValue() + ((LongValue) evaluator.eval(expression)).getValue());
-                } else {
-                    ((DoubleValue) output).setValue(((DoubleValue) output).getValue() + ((DoubleValue) evaluator.eval(expression)).getValue());
-                }
-            } catch (PrimitiveValue.InvalidPrimitive throwables) {
-                throwables.printStackTrace();
+                output = evaluator.eval(new Addition(expression, output));
             } catch (SQLException e) {
                 e.printStackTrace();
             }
