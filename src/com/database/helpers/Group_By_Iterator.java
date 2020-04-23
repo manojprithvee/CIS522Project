@@ -73,18 +73,17 @@ public class Group_By_Iterator implements DB_Iterator {
             if (groups.containsKey(rightrows)) {
                 for (Integer group : groups.get(rightrows).keySet())
                     groups.get(rightrows).get(group).get_results(leftrows);
-                leftrows = left.next();
-                continue;
-            }
-            HashMap<Integer, Aggregator> rows = new HashMap<>();
-            for (Integer i : indexes) {
-                Aggregator function = Aggregator.get_agg((Function) newprojection.get(i), inSchema);
-                if (function != null) {
-                    function.get_results(leftrows);
-                    rows.put(i, function);
+            } else {
+                HashMap<Integer, Aggregator> rows = new HashMap<>();
+                for (Integer i : indexes) {
+                    Aggregator function = Aggregator.get_agg((Function) newprojection.get(i), inSchema);
+                    if (function != null) {
+                        function.get_results(leftrows);
+                        rows.put(i, function);
+                    }
                 }
+                groups.put(rightrows, rows);
             }
-            groups.put(rightrows, rows);
             leftrows = left.next();
         }
     }
